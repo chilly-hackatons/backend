@@ -1,17 +1,14 @@
 require('dotenv').config()
 import { PrismaClient } from '@prisma/client';
 
-import { HTTPException } from 'hono/http-exception'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
 import { post } from './routes/post'
 import { apiAuth } from './middlewares'
-import { sign } from 'hono/jwt'
 import { auth } from './routes/auth';
 
-const bcrypt = require('bcrypt')
 
 export const prisma = new PrismaClient();
 
