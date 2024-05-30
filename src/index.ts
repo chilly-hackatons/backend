@@ -20,11 +20,6 @@ const app = new Hono()
 
 app.use(etag(), logger(), apiAuth())
 
-app.get('/', (c) => {
-  return c.json({
-    message: `Hello!`,
-  })
-})
 
 app.get('/users', async (c) => {
   const allUsers = await prisma.user.findMany({
@@ -35,26 +30,6 @@ app.get('/users', async (c) => {
     },
   })
   return c.json(allUsers)
-})
-
-app.post('/login', async (c) => {
-  const { username, password } = await c.req.json()
-
-  const findedUser = users.find((u) => u.name === username)
-  if (!findedUser) {
-    throw new HTTPException(401, { message: 'not allowed' })
-  }
-  const isPasswordValid = await bcrypt.compare(password, findedUser.password)
-  if (!isPasswordValid) {
-    throw new HTTPException(401, { message: 'Incorrect data' })
-  }
-  const payload = {
-    sub: username,
-    exp: Math.floor(Date.now() / 1000) + 60 * 5, // Token expires in 5 minutes
-  }
-  const secret = 'mySecretKey'
-  const token = await sign(payload, secret)
-  return c.json({ token })
 })
 
 app.route('/post', post)
@@ -78,3 +53,24 @@ serve({
 
 //   //secretkey return
 //   return c.json({username:body.username, token})
+
+
+// app.post('/login', async (c) => {
+//   const { username, password } = await c.req.json()
+
+//   const findedUser = users.find((u) => u.name === username)
+//   if (!findedUser) {
+//     throw new HTTPException(401, { message: 'not allowed' })
+//   }
+//   const isPasswordValid = await bcrypt.compare(password, findedUser.password)
+//   if (!isPasswordValid) {
+//     throw new HTTPException(401, { message: 'Incorrect data' })
+//   }
+//   const payload = {
+//     sub: username,
+//     exp: Math.floor(Date.now() / 1000) + 60 * 5, // Token expires in 5 minutes
+//   }
+//   const secret = 'mySecretKey'
+//   const token = await sign(payload, secret)
+//   return c.json({ token })
+// })
