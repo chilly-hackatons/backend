@@ -5,19 +5,9 @@ const bcrypt = require('bcrypt')
 
 export const auth = new Hono()
 
-type UserType = 'APPLICANT' | 'RECRUITER'
-
-interface User {
-  about: string
-  email: string
-  first_name: string
-  last_name: string
-  patronymic: string
-  password: string
-  github: string
-  user_type: UserType
-  technologies: string[]
-  company_name: string
+enum UserType {
+  APPLICANT = 'APPLICANT',
+  RECRUITER = 'RECRUITER',
 }
 
 auth.get('/', (c) => c.text('List Users'))
@@ -26,6 +16,7 @@ auth.get('/:id', (c) => {
   const id = c.req.param('id')
   return c.text('Get Post: ' + id)
 })
+
 // log-in
 auth.post('/sign-in', async (c) => {
   const { email, password } = await c.req.json()
@@ -78,7 +69,7 @@ auth.post('/sign-up', async (c) => {
   try {
     let user
 
-    if (requestData.user_type === 'RECRUITER') {
+    if (requestData.user_type === UserType.RECRUITER) {
       user = await prisma.user.create({
         data: {
           ...userData,
@@ -89,7 +80,7 @@ auth.post('/sign-up', async (c) => {
           },
         },
       })
-    } else if (requestData.user_type === 'APPLICANT') {
+    } else if (requestData.user_type === UserType.APPLICANT) {
       user = await prisma.user.create({
         data: {
           ...userData,
