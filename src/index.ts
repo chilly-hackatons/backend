@@ -30,6 +30,7 @@ app.get('/users',jwtAuth() , async (c) => {
 })
 
 app.route('/post', post)
+
 app.route('/auth', auth)
 
 const port = 3000

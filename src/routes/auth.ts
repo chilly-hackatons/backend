@@ -38,6 +38,7 @@ auth.post('/sign-in', async (c) => {
 
     const accessToken = await generateAccessToken(user.id)
     const refreshToken = await generateRefreshToken(user.id)
+
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken },
@@ -102,6 +103,7 @@ auth.post('/sign-up', async (c) => {
     }
 
     const refreshToken = await generateRefreshToken(user.id)
+    
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken },
@@ -165,6 +167,4 @@ auth.post('/logout', async (c) => {
   } catch (err) {
     return c.json({ message: 'Invalid token' });
   }
-  
-  
 })
