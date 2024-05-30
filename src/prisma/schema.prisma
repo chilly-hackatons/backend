@@ -16,6 +16,7 @@ model User {
   lastName   String
   patronymic String
   posts      Post[]
+  comments     Comment[]  
 
   about         String
   avatar        String?
@@ -59,6 +60,7 @@ model Post {
   title     String
   content   String
   createdAt DateTime @default(now())
+  comments    Comment[]  
   user      User     @relation(fields: [userId], references: [id])
 }
 
@@ -80,6 +82,16 @@ model Application {
   createdAt   DateTime  @default(now())
   applicant   Applicant @relation(fields: [applicantId], references: [id])
   vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
+}
+
+model Comment {
+  id          Int        @id @default(autoincrement())
+  postId      Int
+  userId      Int
+  content     String
+  createdAt   DateTime   @default(now())
+  post        Post       @relation(fields: [postId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
 }
 
 enum UserType {
