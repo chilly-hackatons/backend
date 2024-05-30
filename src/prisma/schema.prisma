@@ -42,8 +42,8 @@ model Applicant {
   userId Int @unique
 
   skills String[]
-  resume String
-  gitHubLink String
+  resume String?
+  gitHubLink String?
 
   projectsList Json[]
 

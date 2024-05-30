@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Applicant" ALTER COLUMN "resume" DROP NOT NULL,
+ALTER COLUMN "gitHubLink" DROP NOT NULL;

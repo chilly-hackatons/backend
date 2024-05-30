@@ -1,4 +1,5 @@
 require('dotenv').config()
+import { PrismaClient } from '@prisma/client';
 
 import { HTTPException } from 'hono/http-exception'
 import { serve } from '@hono/node-server'
@@ -8,10 +9,15 @@ import { logger } from 'hono/logger'
 import { post } from './routes/post'
 import { apiAuth } from './middlewares'
 import { sign } from 'hono/jwt'
+import { auth } from './routes/auth';
+
 const bcrypt = require('bcrypt')
 
-const users = [{ name: 'username', password: '11111' }]
+export const prisma = new PrismaClient();
+
+
 const app = new Hono()
+
 app.use(etag(), logger(), apiAuth())
 
 app.get('/', (c) => {
@@ -19,18 +25,16 @@ app.get('/', (c) => {
     message: `Hello!`,
   })
 })
-//registration
-app.post('/register', async (c) => {
-  const { username, password } = await c.req.json()
-  const hashPassword = await bcrypt.hash(password, 10)
-  const newUser = { name: username, password: hashPassword }
-  users.push(newUser)
-
-  return c.json({ username: 'privet' })
-})
 
 app.get('/users', async (c) => {
-  return c.json(users)
+  const allUsers = await prisma.user.findMany({
+    include: {
+      posts: true,
+      applicant: true,
+      recruiter: true,
+    },
+  })
+  return c.json(allUsers)
 })
 
 app.post('/login', async (c) => {
@@ -54,6 +58,7 @@ app.post('/login', async (c) => {
 })
 
 app.route('/post', post)
+app.route('/auth', auth)
 
 const port = 3000
 console.log(`Server is running on port ${port}`)
