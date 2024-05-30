@@ -6,7 +6,7 @@ import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
 import { post } from './routes/post'
-import { apiAuth } from './middlewares'
+import { apiAuth, jwtAuth } from './middlewares'
 import { auth } from './routes/auth';
 
 
@@ -18,7 +18,7 @@ const app = new Hono()
 app.use(etag(), logger(), apiAuth())
 
 
-app.get('/users', async (c) => {
+app.get('/users',jwtAuth() , async (c) => {
   const allUsers = await prisma.user.findMany({
     include: {
       posts: true,

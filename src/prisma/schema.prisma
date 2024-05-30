@@ -26,6 +26,8 @@ model User {
   recruiter Recruiter?
   applicant Applicant?
 
+  refreshToken String?
+
   createdAt DateTime @default(now())
 }
 

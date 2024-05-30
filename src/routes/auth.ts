@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
 import { HTTPException } from 'hono/http-exception'
+import { generateAccessToken, generateRefreshToken } from '../helpers'
+import { verify } from 'hono/jwt'
 const bcrypt = require('bcrypt')
 
 export const auth = new Hono()
@@ -28,17 +30,20 @@ auth.post('/sign-in', async (c) => {
       },
     })
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.password
-    )
+    const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
       throw new HTTPException(401, { message: 'Incorrect data' })
     }
 
-    return c.json(user, 200)
+    const accessToken = await generateAccessToken(user.id)
+    const refreshToken = await generateRefreshToken(user.id)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    })
 
+    return c.json({ accessToken, refreshToken })
   } catch (error) {
     return c.json(
       {
@@ -96,7 +101,15 @@ auth.post('/sign-up', async (c) => {
       return c.json({ message: 'Invalid user type' }, 400)
     }
 
-    return c.json(user, 201)
+    const refreshToken = await generateRefreshToken(user.id)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    })
+
+    const accessToken = await generateAccessToken(user.id)
+    return c.json({ accessToken, refreshToken }, 201)
+
   } catch (error) {
     return c.json(
       {
@@ -105,4 +118,53 @@ auth.post('/sign-up', async (c) => {
       409
     )
   }
+})
+
+auth.post('/refresh', async (c) => {
+  const { refresh_token } = await c.req.json()
+
+  if (!refresh_token) {
+    throw new HTTPException(401, { message: 'Refresh token is required' })
+  }
+
+  try {
+    const decoded = await verify(refresh_token, process.env.JWT_REFRESH_SECRET as string)
+
+    const user = await prisma.user.findUnique({ where: { id: Number(decoded.sub) } })
+
+    if (!user || user.refreshToken !== refresh_token) {
+      return c.json({ error: 'Refresh token is invalid' }, 401)
+    }
+
+    const accessToken = await generateAccessToken(user.id)
+    const newRefreshToken = await generateRefreshToken(user.id)
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: newRefreshToken },
+    })
+
+    return c.json({ accessToken, refreshToken: newRefreshToken })
+  } catch (err) {
+    return  c.json({ error: 'Refresh token is invalid' }, 401)
+  }
+})
+
+auth.post('/logout', async (c) => {
+  const { refresh_token } = await c.req.json()
+
+   try {
+    const decoded = await verify(refresh_token,  process.env.JWT_REFRESH_SECRET as string);
+
+    await prisma.user.update({
+      where: { id:  Number(decoded.sub) },
+      data: { refreshToken: null },
+    });
+
+    return c.json({ message: 'Logout successful' });
+  } catch (err) {
+    return c.json({ message: 'Invalid token' });
+  }
+  
+  
 })
