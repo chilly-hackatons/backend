@@ -6,13 +6,13 @@ import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
 import { post } from './routes/post'
-import { auth } from './middlewares'
+import { apiAuth } from './middlewares'
 import { sign } from 'hono/jwt'
 const bcrypt = require('bcrypt')
 
 const users = [{ name: 'username', password: '11111' }]
 const app = new Hono()
-app.use(etag(), logger(), auth())
+app.use(etag(), logger(), apiAuth())
 
 app.get('/', (c) => {
   return c.json({
@@ -21,9 +21,9 @@ app.get('/', (c) => {
 })
 //registration
 app.post('/register', async (c) => {
-  const { user, pass } = await c.req.json()
-  const hashPassword = await bcrypt.hash(pass, 10)
-  const newUser = { name: user, password: hashPassword }
+  const { username, password } = await c.req.json()
+  const hashPassword = await bcrypt.hash(password, 10)
+  const newUser = { name: username, password: hashPassword }
   users.push(newUser)
 
   return c.json({ username: 'privet' })
@@ -34,18 +34,18 @@ app.get('/users', async (c) => {
 })
 
 app.post('/login', async (c) => {
-  const { user, pass } = await c.req.json()
-  const findedUser = users.find((u) => u.name === user)
+  const { username, password } = await c.req.json()
+
+  const findedUser = users.find((u) => u.name === username)
   if (!findedUser) {
     throw new HTTPException(401, { message: 'not allowed' })
   }
-  console.log(pass, user.password)
-  const isPasswordValid = await bcrypt.compare(pass, findedUser.password)
+  const isPasswordValid = await bcrypt.compare(password, findedUser.password)
   if (!isPasswordValid) {
-    throw new HTTPException(401, { message: 'inccorect password' })
+    throw new HTTPException(401, { message: 'Incorrect data' })
   }
   const payload = {
-    sub: user,
+    sub: username,
     exp: Math.floor(Date.now() / 1000) + 60 * 5, // Token expires in 5 minutes
   }
   const secret = 'mySecretKey'

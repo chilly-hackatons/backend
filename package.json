@@ -2,16 +2,19 @@
   "scripts": {
     "dev": "tsx watch src/index.ts"
   },
+  "prisma": {
+    "schema": "src/prisma/schema.prisma"
+  },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "hono": "^4.4.0",
-    "json-web-token": "^3.2.0"
+    "json-web-token": "^3.2.0",
+    "prisma": "^5.14.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
-    "nodemon": "^3.1.2",
     "prettier": "3.2.5",
     "tsx": "^4.7.1"
   }

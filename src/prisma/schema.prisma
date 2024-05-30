@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+
+  firstName  String
+  lastName   String
+  patronymic String
+  posts      Post[]
+
+  about         String
+  avatar        String
+  jobExperience Json[]
+
+  type UserType
+
+  recruiter Recruiter?
+  applicant Applicant?
+
+  createdAt DateTime @default(now())
+}
+
+model Recruiter {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique
+  companyName String
+  vacancies   Vacancy[]
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Applicant {
+  id     Int @id @default(autoincrement())
+  userId Int @unique
+
+  skills String[]
+  resume String
+  gitHubLink String
+
+  projectsList Json[]
+
+  user        User          @relation(fields: [userId], references: [id])
+  Application Application[]
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Vacancy {
+  id           Int           @id @default(autoincrement())
+  recruiterId  Int
+  title        String
+  description  String
+  createdAt    DateTime      @default(now())
+  recruiter    Recruiter     @relation(fields: [recruiterId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id          Int       @id @default(autoincrement())
+  applicantId Int
+  vacancyId   Int
+  status      String
+  createdAt   DateTime  @default(now())
+  applicant   Applicant @relation(fields: [applicantId], references: [id])
+  vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
+}
+
+enum UserType {
+  RECRUITER
+  APPLICANT
+}
