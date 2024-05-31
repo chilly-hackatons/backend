@@ -29,6 +29,8 @@ app.get('/users',jwtAuth() , async (c) => {
   return c.json(allUsers)
 })
 
+
+
 app.route('/post', post)
 
 app.route('/auth', auth)
