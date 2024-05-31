@@ -4,7 +4,6 @@ import { prisma } from "..";
 export const post = new Hono()
 
 
-post.get('/', (c) => c.text('List Posts')) 
 
 post.get('/:id', async (c) => {
   const id = c.req.param('id')
@@ -63,5 +62,11 @@ post.put('/:id', async (c) => {
   }catch(error){
     return c.json(404)
   }
+})
+
+post.get('/', async (c)=> {
+  const getAllPosts = await prisma.post.findMany()
+
+  return c.json(getAllPosts)
 })
 
