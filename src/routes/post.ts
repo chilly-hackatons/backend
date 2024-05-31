@@ -4,7 +4,7 @@ import { prisma } from "..";
 export const post = new Hono()
 
 
-
+//return post
 post.get('/:id', async (c) => {
   const id = c.req.param('id')
   const getPost = await prisma.post.findUnique({
@@ -15,7 +15,7 @@ post.get('/:id', async (c) => {
   }) 
 
   return c.json(getPost)
-
+//add post
 })
 post.post('/', async (c) => {
   const{userId, title, content} = await c.req.json();
@@ -36,7 +36,7 @@ post.post('/', async (c) => {
   return c.json(post)
 }) 
 
-
+//delete post
 post.delete(`/:id`, async (c) => {
   const postId  = c.req.param('id')
   const post = await prisma.post.delete({
@@ -47,7 +47,7 @@ post.delete(`/:id`, async (c) => {
   return c.json(post)
 })
 
-
+//change post
 post.put('/:id', async (c) => {
   const updatedPostId = c.req.param('id')
   const{title, content} = await c.req.json()
@@ -64,7 +64,7 @@ post.put('/:id', async (c) => {
     return c.json(404)
   }
 })
-
+//return all posts
 post.get('/', async (c)=> {
   const getAllPosts = await prisma.post.findMany()
 
