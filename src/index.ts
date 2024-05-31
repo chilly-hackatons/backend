@@ -8,6 +8,7 @@ import { logger } from 'hono/logger'
 import { post } from './routes/post'
 import { apiAuth, jwtAuth } from './middlewares'
 import { auth } from './routes/auth';
+import { cors } from 'hono/cors';
 
 
 export const prisma = new PrismaClient();
@@ -15,7 +16,11 @@ export const prisma = new PrismaClient();
 
 const app = new Hono()
 
-app.use(etag(), logger(), apiAuth())
+app.use(cors({
+    origin: 'http://localhost:5173',
+    maxAge: 600,
+    credentials: true,
+}), etag(), logger(), apiAuth())
 
 
 app.get('/users',jwtAuth() , async (c) => {
