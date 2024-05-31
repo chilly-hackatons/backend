@@ -11,6 +11,7 @@ post.get('/:id', async (c) => {
     where:{
       id:Number(id)
     }
+    
   }) 
 
   return c.json(getPost)
