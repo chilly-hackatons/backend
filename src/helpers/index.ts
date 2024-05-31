@@ -1,4 +1,4 @@
-import { decode, sign, verify } from 'hono/jwt'
+import { sign } from 'hono/jwt'
 
 
 export const generateAccessToken = (userId : number | string) => {

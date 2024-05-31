@@ -3,6 +3,7 @@ import { prisma } from '..'
 import { HTTPException } from 'hono/http-exception'
 import { generateAccessToken, generateRefreshToken } from '../helpers'
 import { verify } from 'hono/jwt'
+import { getCookie, setCookie } from 'hono/cookie'
 const bcrypt = require('bcrypt')
 
 export const auth = new Hono()
@@ -44,7 +45,23 @@ auth.post('/sign-in', async (c) => {
       data: { refreshToken },
     })
 
-    return c.json({ accessToken, refreshToken })
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
+    setCookie(c, 'Refresh-Token', refreshToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
+    })
+
+    const {
+      refreshToken: _refreshToken,
+      password: _password,
+      ...userData
+    } = user
+
+    return c.json({ accessToken, user: userData })
   } catch (error) {
     return c.json(
       {
@@ -74,7 +91,6 @@ auth.post('/sign-up', async (c) => {
 
   try {
     let user
-
     if (requestData.user_type === UserType.RECRUITER) {
       user = await prisma.user.create({
         data: {
@@ -103,15 +119,27 @@ auth.post('/sign-up', async (c) => {
     }
 
     const refreshToken = await generateRefreshToken(user.id)
-    
+
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken },
     })
 
     const accessToken = await generateAccessToken(user.id)
-    return c.json({ accessToken, refreshToken }, 201)
 
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
+    setCookie(c, 'Refresh-Token', refreshToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
+    })
+
+    const { refreshToken: _refreshToken, ...userDataReturn } = user
+
+    return c.json({ accessToken, user: userDataReturn }, 201)
   } catch (error) {
     return c.json(
       {
@@ -123,16 +151,21 @@ auth.post('/sign-up', async (c) => {
 })
 
 auth.post('/refresh', async (c) => {
-  const { refresh_token } = await c.req.json()
+  const refresh_token = getCookie(c, 'Refresh-Token')
 
   if (!refresh_token) {
     throw new HTTPException(401, { message: 'Refresh token is required' })
   }
 
   try {
-    const decoded = await verify(refresh_token, process.env.JWT_REFRESH_SECRET as string)
+    const decoded = await verify(
+      refresh_token,
+      process.env.JWT_REFRESH_SECRET as string
+    )
 
-    const user = await prisma.user.findUnique({ where: { id: Number(decoded.sub) } })
+    const user = await prisma.user.findUnique({
+      where: { id: Number(decoded.sub) },
+    })
 
     if (!user || user.refreshToken !== refresh_token) {
       return c.json({ error: 'Refresh token is invalid' }, 401)
@@ -146,25 +179,40 @@ auth.post('/refresh', async (c) => {
       data: { refreshToken: newRefreshToken },
     })
 
-    return c.json({ accessToken, refreshToken: newRefreshToken })
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
+    setCookie(c, 'Refresh-Token', newRefreshToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
+    })
+
+    const { refreshToken: _refreshToken, password, ...userData } = user
+
+    return c.json({ accessToken, user: userData })
   } catch (err) {
-    return  c.json({ error: 'Refresh token is invalid' }, 401)
+    return c.json({ error: 'Refresh token is invalid' }, 401)
   }
 })
 
 auth.post('/logout', async (c) => {
   const { refresh_token } = await c.req.json()
 
-   try {
-    const decoded = await verify(refresh_token,  process.env.JWT_REFRESH_SECRET as string);
+  try {
+    const decoded = await verify(
+      refresh_token,
+      process.env.JWT_REFRESH_SECRET as string
+    )
 
     await prisma.user.update({
-      where: { id:  Number(decoded.sub) },
+      where: { id: Number(decoded.sub) },
       data: { refreshToken: null },
-    });
+    })
 
-    return c.json({ message: 'Logout successful' });
+    return c.json({ message: 'Logout successful' }, 200)
   } catch (err) {
-    return c.json({ message: 'Invalid token' });
+    return c.json({ message: 'Invalid token' })
   }
 })
