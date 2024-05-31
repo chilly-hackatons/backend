@@ -45,16 +45,23 @@ auth.post('/sign-in', async (c) => {
       data: { refreshToken },
     })
 
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
     setCookie(c, 'Refresh-Token', refreshToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 1000,
-      expires: new Date(Date.UTC(2000, 11, 24, 10, 30, 59, 900)),
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
     })
 
-    const { refreshToken: _refreshToken, password: _password, ...userData } = user
+    const {
+      refreshToken: _refreshToken,
+      password: _password,
+      ...userData
+    } = user
 
-    return c.json({ accessToken, user : userData })
+    return c.json({ accessToken, user: userData })
   } catch (error) {
     return c.json(
       {
@@ -120,11 +127,14 @@ auth.post('/sign-up', async (c) => {
 
     const accessToken = await generateAccessToken(user.id)
 
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
     setCookie(c, 'Refresh-Token', refreshToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 1000,
-      expires: new Date(Date.UTC(2000, 11, 24, 10, 30, 59, 900)),
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
     })
 
     const { refreshToken: _refreshToken, ...userDataReturn } = user
@@ -141,9 +151,8 @@ auth.post('/sign-up', async (c) => {
 })
 
 auth.post('/refresh', async (c) => {
-  
   const refresh_token = getCookie(c, 'Refresh-Token')
-  
+
   if (!refresh_token) {
     throw new HTTPException(401, { message: 'Refresh token is required' })
   }
@@ -170,15 +179,17 @@ auth.post('/refresh', async (c) => {
       data: { refreshToken: newRefreshToken },
     })
 
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+
     setCookie(c, 'Refresh-Token', newRefreshToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 1000,
-      expires: new Date(Date.UTC(2000, 11, 24, 10, 30, 59, 900)),
+      maxAge: 30 * 24 * 60 * 60,
+      expires: expires,
     })
 
     const { refreshToken: _refreshToken, password, ...userData } = user
-
 
     return c.json({ accessToken, user: userData })
   } catch (err) {
