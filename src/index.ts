@@ -8,7 +8,12 @@ import { logger } from 'hono/logger'
 import { post } from './routes/post'
 import { apiAuth, jwtAuth } from './middlewares'
 import { auth } from './routes/auth';
+
+import { comments } from './routes/comments'
+import { vacancy } from './routes/vacancy'
+
 import { cors } from 'hono/cors';
+
 
 
 export const prisma = new PrismaClient();
@@ -34,7 +39,9 @@ app.get('/users',jwtAuth() , async (c) => {
   return c.json(allUsers)
 })
 
+app.route('/vacancy', vacancy)
 
+app.route('/comments', comments)
 
 app.route('/post', post)
 
