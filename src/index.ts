@@ -9,8 +9,8 @@ import { post } from './routes/post'
 import { apiAuth, jwtAuth } from './middlewares'
 import { auth } from './routes/auth';
 
-import { comms } from './routes/coms'
-import { vac } from './routes/vac'
+import { comments } from './routes/comments'
+import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors';
 
@@ -39,9 +39,9 @@ app.get('/users',jwtAuth() , async (c) => {
   return c.json(allUsers)
 })
 
-app.route('/vacancy', vac)
+app.route('/vacancy', vacancy)
 
-app.route('/comms', comms)
+app.route('/comments', comments)
 
 app.route('/post', post)
 

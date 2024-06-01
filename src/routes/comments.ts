@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { prisma } from "..";
 
 
-export const comms = new Hono()
+export const comments = new Hono()
 
-comms.post('/', async (c) => {
+comments.post('/', async (c) => {
     const {content, userId, postId} = await c.req.json()
     const comment = await prisma.comment.create({
        data: {

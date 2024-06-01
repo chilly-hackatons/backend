@@ -71,3 +71,12 @@ post.get('/', async (c)=> {
   return c.json(getAllPosts)
 })
 
+post.get('/:id/comments', async (c)=>{
+    const postCommsId = c.req.param('id')
+    const retPostWithComms = await prisma.comment.findMany({
+      where:{
+        id:Number(postCommsId)
+      },
+    })
+    return c.json(retPostWithComms)
+})

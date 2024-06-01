@@ -1,15 +1,15 @@
 import { Hono } from "hono";
 import { prisma } from "..";
 
-export const vac = new Hono()
+export const vacancy = new Hono()
 
-vac.get('/', async (c)=>{
+vacancy.get('/', async (c)=>{
     const getAllVacs = await prisma.vacancy.findMany()
 
   return c.json(getAllVacs)
 })
 
-vac.post('/', async (c)=>{
+vacancy.post('/', async (c)=>{
     const{recruiterId, title, description} = await c.req.json();
   const vacancy = await prisma.vacancy.create({
     data: {
@@ -26,17 +26,20 @@ vac.post('/', async (c)=>{
   return c.json(vacancy)
 })
 
-vac.delete('/:id', async (c)=>{
+vacancy.delete('/:id', async (c)=>{
     const vacId  = c.req.param('id')
+    try{
     const vacansy = await prisma.vacancy.delete({
+    
       where: {
         id: Number(vacId),
       },
     })
     return c.json(vacansy)
+  }catch(error){return c.json(404)}
 })
 
-vac.get('/:id', async (c)=>{
+vacancy.get('/:id', async (c)=>{
     const id = c.req.param('id')
   const getVac = await prisma.vacancy.findUnique({
     where:{
@@ -48,7 +51,7 @@ vac.get('/:id', async (c)=>{
   return c.json(getVac)
 })
 
-vac.put('/:id', async (c)=>{
+vacancy.put('/:id', async (c)=>{
     const updatedVacId = c.req.param('id')
   const{title, descript,recruiterId} = await c.req.json()
   try {
