@@ -165,6 +165,10 @@ auth.post('/refresh', async (c) => {
 
     const user = await prisma.user.findUnique({
       where: { id: Number(decoded.sub) },
+      include: {
+        applicant: true,
+        recruiter: true,
+      },
     })
 
     if (!user || user.refreshToken !== refresh_token) {
@@ -189,9 +193,14 @@ auth.post('/refresh', async (c) => {
       expires: expires,
     })
 
-    const { refreshToken: _refreshToken, password, ...userData } = user
+    const { refreshToken: _refreshToken, password, recruiter, applicant,  ...userData } = user
 
-    return c.json({ accessToken, user: userData })
+    const userDataReturn = {
+      ...userData,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+    }
+    return c.json({ accessToken, user: userDataReturn })
   } catch (err) {
     return c.json({ error: 'Refresh token is invalid' }, 401)
   }
