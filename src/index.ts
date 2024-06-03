@@ -13,6 +13,7 @@ import { comments } from './routes/comments'
 import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
+import { profile } from './routes/profile'
 
 export const prisma = new PrismaClient()
 
@@ -29,130 +30,8 @@ app.use(
   apiAuth()
 )
 
-app.patch('/profile/:id', jwtAuth(), async (c) => {
-  const id = c.req.param('id')
-
-  const {
-    about,
-    email,
-    firstName,
-    lastName,
-    patronymic,
-
-    companyName,
-
-    userType,
-    
-    gitHubLink,
-    skills
-  } = await c.req.json()
-
-  if (userType === 'RECRUITER') {
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        about,
-        firstName,
-        lastName,
-        patronymic,
-        email,
-        recruiter: {
-          update: {
-            companyName,
-          },
-        },
-      },
-      include: {
-        recruiter: true,
-      },
-    })
 
 
-    const {password, refreshToken, recruiter, ...userWithOutPassword} = updatedUser
-
-      const userDataReturn = {
-      ...userWithOutPassword,
-       companyName: updatedUser.recruiter!.companyName
-    }
-
-
-    return c.json(userDataReturn, 200)
-  } else if (userType === 'APPLICANT') {
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: Number(id),
-      },
-      data: {
-        about,
-        firstName,
-        lastName,
-        patronymic,
-        email,
-        applicant: {
-          update: {
-            gitHubLink,
-            skills,
-          },
-        },
-      },
-      include: {
-        applicant: true,
-      },
-    })
-    
-    
-    const {password, refreshToken, applicant, ...userWithOutPassword} = updatedUser
-
-      const userDataReturn = {
-      ...userWithOutPassword,
-       gitHubLink: updatedUser.applicant!.gitHubLink,
-       skills: updatedUser.applicant!.skills
-    }
-
-
-    return c.json(userDataReturn, 200)
-  } else {
-    return c.json({ message: 'Invalid user type' }, 400)
-  }
-})
-
-app.patch('/job/:id', jwtAuth(), async (c) => {
-  const jobData  = await c.req.json()
-
-  const id = c.req.param('id')
-
-  try {
-    const updatedJob = await prisma.user.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      jobExperience: {
-        push: jobData,
-      }
-    },
-    include: {
-      applicant: true,
-      recruiter: true,
-    },
-  })
-
-  const { password, refreshToken, recruiter, applicant, ...userWithOutPassword } = updatedJob
-
-
-   const userDataReturn = {
-      ...userWithOutPassword,
-      ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
-    }
-
-  return c.json(userDataReturn, 200)
-  } catch (error) {
-    return c.json({ message: 'User not found' }, 404)
-  }
-})
 
 app.get('/users', jwtAuth(), async (c) => {
   const allUsers = await prisma.user.findMany({
@@ -193,6 +72,8 @@ app.route('/comments', comments)
 app.route('/post', post)
 
 app.route('/auth', auth)
+
+app.route('/profile', profile)
 
 const port = 3000
 console.log(`Server is running on port ${port}`)

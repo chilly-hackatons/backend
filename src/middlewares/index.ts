@@ -5,7 +5,7 @@ import { verify } from 'hono/jwt'
 export const apiAuth = () => {
   return createMiddleware(async (c, next) => {
     const accessToken = c.req.header('Secret-Access-Token')
-    console.log(accessToken === process.env.BASE_SECRET_TOKEN)
+
     if (accessToken !== process.env.BASE_SECRET_TOKEN)
       throw new HTTPException(401, { message: 'Do not have access token' })
     await next()

@@ -23,6 +23,7 @@ post.get('/:id', async (c) => {
 
   return c.json(getPost)
 })
+
 //add post
 post.post('/', async (c) => {
   const { userId, title, content } = await c.req.json()
