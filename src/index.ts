@@ -17,7 +17,7 @@ import { profile } from './routes/profile'
 
 export const prisma = new PrismaClient()
 
-const app = new Hono()
+export const app = new Hono()
 
 app.use(
   cors({
