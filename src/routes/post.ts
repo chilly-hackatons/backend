@@ -25,16 +25,24 @@ post.get('/:id', async (c) => {
 })
 //add post
 post.post('/', async (c) => {
-  const { userId, title, content, firstTag, secondTag } = await c.req.json()
+  const { userId, title, content, tags } = await c.req.json()
   const post = await prisma.post.create({
     data: {
       title,
       content,
-      tags: { create: [{ name: firstTag }, { name: secondTag }]},
+      tags: {
+        connectOrCreate: tags.map((tag: any) => ({
+          where: { name: tag },
+          create: { name: tag }
+        }))
+      },
       user: {
         connect: {
           id: userId,
         },
+        include:{
+          tags:true
+        }
       },
     },
   })
@@ -72,7 +80,11 @@ post.put('/:id', async (c) => {
 })
 //return all posts
 post.get('/', async (c) => {
-  const getAllPosts = await prisma.post.findMany()
+  const getAllPosts = await prisma.post.findMany({
+    include:{
+      tags:true
+    }
+  })
 
   return c.json(getAllPosts)
 })
