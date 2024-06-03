@@ -21,7 +21,7 @@ const app = new Hono()
 
 app.use(
   cors({
-    origin: '*',
+    origin: ['http://localhost:5173', 'http://localhost:4173'],
     maxAge: 600,
     credentials: true,
   }),
