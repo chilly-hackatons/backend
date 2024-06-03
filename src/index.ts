@@ -31,7 +31,7 @@ app.use(
 )
 
 
-
+app.get('/', (c) => c.text('Hello World!'))
 
 app.get('/users', jwtAuth(), async (c) => {
   const allUsers = await prisma.user.findMany({
