@@ -25,11 +25,12 @@ post.get('/:id', async (c) => {
 })
 //add post
 post.post('/', async (c) => {
-  const { userId, title, content } = await c.req.json()
+  const { userId, title, content, firstTag, secondTag } = await c.req.json()
   const post = await prisma.post.create({
     data: {
       title,
       content,
+      tags: { create: [{ name: firstTag }, { name: secondTag }]},
       user: {
         connect: {
           id: userId,
