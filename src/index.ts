@@ -18,7 +18,7 @@ import { handle } from "@hono/node-server/vercel";
 
 export const prisma = new PrismaClient()
 
-const app = new Hono().basePath('/api');
+const app = new Hono()
 
 app.use(
   cors({
