@@ -1,7 +1,6 @@
 require('dotenv').config()
 import { PrismaClient } from '@prisma/client'
 
-import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
@@ -14,7 +13,7 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 import { profile } from './routes/profile'
-import { handle } from "@hono/node-server/vercel";
+import { serve } from '@hono/node-server'
 
 export const prisma = new PrismaClient()
 
@@ -76,12 +75,10 @@ app.route('/auth', auth)
 
 app.route('/profile', profile)
 
-// const port = 3000
-// console.log(`Server is running on port ${port}`)
+const port = 3000
+console.log(`Server is running on port ${port}`)
 
-// serve({
-//   fetch: app.fetch,
-//   port,
-// })
-
-export default handle(app);
+serve({
+  fetch: app.fetch,
+  port,
+})
