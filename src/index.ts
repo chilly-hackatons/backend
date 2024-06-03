@@ -14,7 +14,7 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 import { profile } from './routes/profile'
-import { handle } from 'hono/vercel'
+import { handle } from "@hono/node-server/vercel";
 
 export const prisma = new PrismaClient()
 
