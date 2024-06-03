@@ -21,7 +21,7 @@ const app = new Hono()
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:4173'],
+    origin: ['http://localhost:5173', 'http://localhost:4173', 'https://frontend-drab-one-85.vercel.app'],
     maxAge: 600,
     credentials: true,
   }),
