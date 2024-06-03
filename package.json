@@ -2,7 +2,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
-    "build": "tsc  src/index.ts"
+    "deploy": "vercel"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
