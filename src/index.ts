@@ -118,6 +118,42 @@ app.patch('/profile/:id', jwtAuth(), async (c) => {
   }
 })
 
+app.patch('/job/:id', jwtAuth(), async (c) => {
+  const jobData  = await c.req.json()
+
+  const id = c.req.param('id')
+
+  try {
+    const updatedJob = await prisma.user.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      jobExperience: {
+        push: jobData,
+      }
+    },
+    include: {
+      applicant: true,
+      recruiter: true,
+    },
+  })
+
+  const { password, refreshToken, recruiter, applicant, ...userWithOutPassword } = updatedJob
+
+
+   const userDataReturn = {
+      ...userWithOutPassword,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+    }
+
+  return c.json(userDataReturn, 200)
+  } catch (error) {
+    return c.json({ message: 'User not found' }, 404)
+  }
+})
+
 app.get('/users', jwtAuth(), async (c) => {
   const allUsers = await prisma.user.findMany({
     include: {
