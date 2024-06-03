@@ -14,10 +14,11 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 import { profile } from './routes/profile'
+import { handle } from 'hono/vercel'
 
 export const prisma = new PrismaClient()
 
-export const app = new Hono()
+const app = new Hono().basePath('/api');
 
 app.use(
   cors({
@@ -75,10 +76,12 @@ app.route('/auth', auth)
 
 app.route('/profile', profile)
 
-const port = 3000
-console.log(`Server is running on port ${port}`)
+// const port = 3000
+// console.log(`Server is running on port ${port}`)
 
-serve({
-  fetch: app.fetch,
-  port,
-})
+// serve({
+//   fetch: app.fetch,
+//   port,
+// })
+
+export default handle(app);
