@@ -22,7 +22,7 @@ export const config = {
   },
 }
 
-export const app = new Hono()
+export const app = new Hono().basePath('/api')
 
 app.use(
   cors({
