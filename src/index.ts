@@ -17,12 +17,6 @@ import { serve } from '@hono/node-server'
 
 export const prisma = new PrismaClient()
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
 export const app = new Hono()
 
 app.use(
