@@ -13,8 +13,6 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 import { profile } from './routes/profile'
-import { serve } from '@hono/node-server'
-import { handle } from '@hono/node-server/vercel'
 
 export const prisma = new PrismaClient()
 
@@ -24,7 +22,7 @@ export const config = {
   },
 }
 
-const app = new Hono().basePath('/api')
+export const app = new Hono()
 
 app.use(
   cors({
@@ -89,4 +87,3 @@ app.route('/profile', profile)
 //   fetch: app.fetch,
 //   port,
 // })
-export default handle(app)
