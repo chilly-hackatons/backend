@@ -13,6 +13,7 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 import { profile } from './routes/profile'
+import { serve } from '@hono/node-server'
 
 export const prisma = new PrismaClient()
 
@@ -22,7 +23,7 @@ export const config = {
   },
 }
 
-export const app = new Hono().basePath('/api')
+export const app = new Hono()
 
 app.use(
   cors({
@@ -80,10 +81,10 @@ app.route('/auth', auth)
 
 app.route('/profile', profile)
 
-// const port = 3000
-// console.log(`Server is running on port ${port}`)
+const port = 3000
+console.log(`Server is running on port ${port}`)
 
-// serve({
-//   fetch: app.fetch,
-//   port,
-// })
+serve({
+  fetch: app.fetch,
+  port,
+})
