@@ -30,7 +30,10 @@ post.get('/:id', async (c) => {
                 avatar: true,
               },
           }
-        }
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
       }
     },
   })
