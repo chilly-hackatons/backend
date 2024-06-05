@@ -135,6 +135,7 @@ auth.post('/sign-up', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'Strict',
     })
 
     const { refreshToken: _refreshToken, ...userDataReturn } = user
