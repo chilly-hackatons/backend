@@ -53,6 +53,7 @@ auth.post('/sign-in', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'None',
     })
 
     const {
@@ -135,7 +136,7 @@ auth.post('/sign-up', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
-      sameSite: 'Strict',
+      sameSite: 'None',
     })
 
     const { refreshToken: _refreshToken, ...userDataReturn } = user
@@ -192,6 +193,7 @@ auth.post('/refresh', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'None',
     })
 
     const { refreshToken: _refreshToken, password, recruiter, applicant,  ...userData } = user
