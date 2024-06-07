@@ -11,6 +11,7 @@ vacancy.get('/', async (c) => {
 
 vacancy.post('/', async (c) => {
   const { recruiterId, title, description } = await c.req.json()
+  
   const vacancy = await prisma.vacancy.create({
     data: {
       title,

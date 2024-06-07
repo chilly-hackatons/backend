@@ -4,9 +4,15 @@ import { HTTPException } from 'hono/http-exception'
 import { generateAccessToken, generateRefreshToken } from '../helpers'
 import { verify } from 'hono/jwt'
 import { getCookie, setCookie } from 'hono/cookie'
+import { Applicant, Recruiter, User } from '@prisma/client'
 const bcrypt = require('bcrypt')
 
 export const auth = new Hono()
+
+interface UserWithRelations extends User {
+  recruiter?: Recruiter | null;
+  applicant?: Applicant | null;
+}
 
 enum UserType {
   APPLICANT = 'APPLICANT',
@@ -29,6 +35,11 @@ auth.post('/sign-in', async (c) => {
       where: {
         email,
       },
+      include: {
+        applicant: true,
+        recruiter: true,
+      },
+      
     })
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -56,13 +67,24 @@ auth.post('/sign-in', async (c) => {
       sameSite: 'None',
     })
 
+    
+
     const {
       refreshToken: _refreshToken,
+      recruiter,
+      applicant,
       password: _password,
       ...userData
     } = user
 
-    return c.json({ accessToken, user: userData })
+
+     const userDataReturn = {
+      ...userData,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+    }
+
+    return c.json({ accessToken, user: userDataReturn })
   } catch (error) {
     return c.json(
       {
@@ -91,7 +113,7 @@ auth.post('/sign-up', async (c) => {
   }
 
   try {
-    let user
+    let user : UserWithRelations
     if (requestData.user_type === UserType.RECRUITER) {
       user = await prisma.user.create({
         data: {
@@ -102,6 +124,9 @@ auth.post('/sign-up', async (c) => {
             },
           },
         },
+        include: {
+          recruiter: true,
+        }
       })
     } else if (requestData.user_type === UserType.APPLICANT) {
       user = await prisma.user.create({
@@ -114,10 +139,15 @@ auth.post('/sign-up', async (c) => {
             },
           },
         },
+        include: {
+          applicant: true,
+        }
       })
     } else {
       return c.json({ message: 'Invalid user type' }, 400)
     }
+
+    console.log(user)
 
     const refreshToken = await generateRefreshToken(user.id)
 
@@ -139,7 +169,14 @@ auth.post('/sign-up', async (c) => {
       sameSite: 'None',
     })
 
-    const { refreshToken: _refreshToken, ...userDataReturn } = user
+    const { refreshToken: _refreshToken, recruiter, applicant, ...userData_ } = user
+
+      const userDataReturn = {
+      ...userData_,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+    }
+
 
     return c.json({ accessToken, user: userDataReturn }, 201)
   } catch (error) {
