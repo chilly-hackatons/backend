@@ -4,14 +4,50 @@ import { prisma } from '..'
 export const vacancy = new Hono()
 
 vacancy.get('/', async (c) => {
-  const getAllVacs = await prisma.vacancy.findMany()
+  const allVacancies = await prisma.vacancy.findMany(
+    {
 
-  return c.json(getAllVacs)
+      orderBy: {
+        createdAt: 'desc',
+      },
+
+      include: {
+       recruiter: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          }
+        }
+       }
+      }
+    }
+  )
+
+   const formattedVacancies = allVacancies.map(vacancy => {
+    const { recruiter,recruiterId, ...vacancyData } = vacancy;
+    return {
+      ...vacancyData,
+      user: {
+        id: recruiter.user.id,
+        firstName: recruiter.user.firstName,
+        lastName: recruiter.user.lastName,
+        avatar: recruiter.user.avatar,
+        companyName: recruiter.companyName,
+      }
+    };
+  });
+
+  return c.json(formattedVacancies)
 })
 
 vacancy.post('/', async (c) => {
   const { recruiterId, title, description } = await c.req.json()
-  
+
   const vacancy = await prisma.vacancy.create({
     data: {
       title,
@@ -43,13 +79,20 @@ vacancy.delete('/:id', async (c) => {
 
 vacancy.get('/:id', async (c) => {
   const id = c.req.param('id')
-  const getVac = await prisma.vacancy.findUnique({
+
+  const vacancy = await prisma.vacancy.findUnique({
     where: {
       id: Number(id),
     },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      createdAt: true,
+    }
   })
 
-  return c.json(getVac)
+  return c.json(vacancy)
 })
 
 vacancy.put('/:id', async (c) => {
