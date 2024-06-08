@@ -42,6 +42,22 @@ vacancy.get('/', async (c) => {
   return c.json(formattedVacancies)
 })
 
+vacancy.get('/statistics/:id', async (c) => {
+  const id = c.req.param('id')
+
+  const vacancies = await prisma.vacancy.findMany({
+    where: {
+      recruiterId: Number(id),
+    },
+    include: {
+      applications: true,
+    },
+  })
+  
+
+  return c.json(vacancies)
+})
+
 vacancy.get('/search', async (c) => {
   const searchQuery = c.req.query('searchQuery')
 
