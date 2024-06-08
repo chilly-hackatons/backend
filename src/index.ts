@@ -21,7 +21,7 @@ export const app = new Hono()
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:4173', 'https://frontend-h42fl5sm8-hackaton-404.vercel.app', 'https://frontend-drab-one-85.vercel.app'],
+    origin: ['http://localhost:5173', 'http://localhost:4173', 'hackaton-404.ru', 'https://frontend-drab-one-85.vercel.app'],
     maxAge: 600,
     credentials: true,
   }),

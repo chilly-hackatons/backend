@@ -4,15 +4,13 @@ import { prisma } from '..'
 export const vacancy = new Hono()
 
 vacancy.get('/', async (c) => {
-  const allVacancies = await prisma.vacancy.findMany(
-    {
+  const allVacancies = await prisma.vacancy.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
 
-      orderBy: {
-        createdAt: 'desc',
-      },
-
-      include: {
-       recruiter: {
+    include: {
+      recruiter: {
         include: {
           user: {
             select: {
@@ -21,15 +19,14 @@ vacancy.get('/', async (c) => {
               lastName: true,
               avatar: true,
             },
-          }
-        }
-       }
-      }
-    }
-  )
+          },
+        },
+      },
+    },
+  })
 
-   const formattedVacancies = allVacancies.map(vacancy => {
-    const { recruiter,recruiterId, ...vacancyData } = vacancy;
+  const formattedVacancies = allVacancies.map((vacancy) => {
+    const { recruiter, recruiterId, ...vacancyData } = vacancy
     return {
       ...vacancyData,
       user: {
@@ -38,29 +35,50 @@ vacancy.get('/', async (c) => {
         lastName: recruiter.user.lastName,
         avatar: recruiter.user.avatar,
         companyName: recruiter.companyName,
-      }
-    };
-  });
+      },
+    }
+  })
 
   return c.json(formattedVacancies)
+})
+
+vacancy.get('/search', async (c) => {
+  const searchQuery = c.req.query('searchQuery')
+
+  const result = await prisma.vacancy.findMany({
+    where: {
+      title: {
+        search: searchQuery,
+      },
+      description: {
+        search: searchQuery,
+      },
+    },
+  })
+
+  return c.json(result)
 })
 
 vacancy.post('/', async (c) => {
   const { recruiterId, title, description } = await c.req.json()
 
-  const vacancy = await prisma.vacancy.create({
-    data: {
-      title,
-      description,
-      recruiter: {
-        connect: {
-          id: Number(recruiterId),
+  try {
+    const vacancy = await prisma.vacancy.create({
+      data: {
+        title,
+        description,
+        recruiter: {
+          connect: {
+            id: Number(recruiterId),
+          },
         },
       },
-    },
-  })
+    })
 
-  return c.json(vacancy)
+    return c.json(vacancy)
+  } catch (error) {
+    return c.json(404)
+  }
 })
 
 vacancy.delete('/:id', async (c) => {
@@ -89,7 +107,7 @@ vacancy.get('/:id', async (c) => {
       title: true,
       description: true,
       createdAt: true,
-    }
+    },
   })
 
   return c.json(vacancy)
