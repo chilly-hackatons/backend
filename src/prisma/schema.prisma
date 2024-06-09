@@ -79,7 +79,7 @@ model Application {
   id          Int       @id @default(autoincrement())
   applicantId Int
   vacancyId   Int
-  status      String
+  status      ApplicationStatus @default(PENDING)
   createdAt   DateTime  @default(now())
   applicant   Applicant @relation(fields: [applicantId], references: [id])
   vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
@@ -98,4 +98,10 @@ model Comment {
 enum UserType {
   RECRUITER
   APPLICANT
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

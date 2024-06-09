@@ -53,7 +53,6 @@ vacancy.get('/statistics/:id', async (c) => {
       applications: true,
     },
   })
-  
 
   return c.json(vacancies)
 })
@@ -127,6 +126,28 @@ vacancy.get('/:id', async (c) => {
   })
 
   return c.json(vacancy)
+})
+
+vacancy.patch('/vacancy-respond', async (c) => {
+  const { applicantId, vacancyId } = await c.req.json()
+
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      applicantId: Number(applicantId),
+      vacancyId: Number(vacancyId),
+    },
+  })
+
+  if (existingApplication) {
+    return c.json({ message: 'Application already exists' }, 409)
+  }
+
+  const application = await prisma.application.create({
+    data: {
+      applicantId,
+      vacancyId,
+    },
+  })
 })
 
 vacancy.put('/:id', async (c) => {

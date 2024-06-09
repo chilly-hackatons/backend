@@ -10,8 +10,8 @@ const bcrypt = require('bcrypt')
 export const auth = new Hono()
 
 interface UserWithRelations extends User {
-  recruiter?: Recruiter | null;
-  applicant?: Applicant | null;
+  recruiter?: Recruiter | null
+  applicant?: Applicant | null
 }
 
 enum UserType {
@@ -39,7 +39,6 @@ auth.post('/sign-in', async (c) => {
         applicant: true,
         recruiter: true,
       },
-      
     })
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -67,8 +66,6 @@ auth.post('/sign-in', async (c) => {
       sameSite: 'None',
     })
 
-    
-
     const {
       refreshToken: _refreshToken,
       recruiter,
@@ -77,11 +74,13 @@ auth.post('/sign-in', async (c) => {
       ...userData
     } = user
 
-
-     const userDataReturn = {
+    const userDataReturn = {
       ...userData,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
     }
 
     return c.json({ accessToken, user: userDataReturn })
@@ -113,7 +112,7 @@ auth.post('/sign-up', async (c) => {
   }
 
   try {
-    let user : UserWithRelations
+    let user: UserWithRelations
     if (requestData.user_type === UserType.RECRUITER) {
       user = await prisma.user.create({
         data: {
@@ -126,7 +125,7 @@ auth.post('/sign-up', async (c) => {
         },
         include: {
           recruiter: true,
-        }
+        },
       })
     } else if (requestData.user_type === UserType.APPLICANT) {
       user = await prisma.user.create({
@@ -141,13 +140,11 @@ auth.post('/sign-up', async (c) => {
         },
         include: {
           applicant: true,
-        }
+        },
       })
     } else {
       return c.json({ message: 'Invalid user type' }, 400)
     }
-
-    console.log(user)
 
     const refreshToken = await generateRefreshToken(user.id)
 
@@ -169,14 +166,21 @@ auth.post('/sign-up', async (c) => {
       sameSite: 'None',
     })
 
-    const { refreshToken: _refreshToken, recruiter, applicant, ...userData_ } = user
+    const {
+      refreshToken: _refreshToken,
+      recruiter,
+      applicant,
+      ...userData_
+    } = user
 
-      const userDataReturn = {
+    const userDataReturn = {
       ...userData_,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
     }
-
 
     return c.json({ accessToken, user: userDataReturn }, 201)
   } catch (error) {
@@ -233,12 +237,21 @@ auth.post('/refresh', async (c) => {
       sameSite: 'None',
     })
 
-    const { refreshToken: _refreshToken, password, recruiter, applicant,  ...userData } = user
+    const {
+      refreshToken: _refreshToken,
+      password,
+      recruiter,
+      applicant,
+      ...userData
+    } = user
 
     const userDataReturn = {
       ...userData,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
     }
     return c.json({ accessToken, user: userDataReturn })
   } catch (err) {
