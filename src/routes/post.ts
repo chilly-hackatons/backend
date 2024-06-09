@@ -40,9 +40,9 @@ post.post('/', async (c) => {
         connect: {
           id: userId,
         },
-        include:{
-          tags:true
-        }
+        // include:{
+        //   tags:true
+        // }
       },
     },
   })
@@ -88,3 +88,33 @@ post.get('/', async (c) => {
 
   return c.json(getAllPosts)
 })
+
+//posts by tags
+post.get('/posts', async (c) => {
+  const tagQuery = c.req.query('tag');
+  if (!tagQuery) {
+    return c.json({ error: 'Invalid tag parameter' }, 400);
+  }
+
+  
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        tags: {
+          some: {
+            name: {
+              in: tagQuery.split(','),
+            }
+          }
+        }
+      },
+      include: {
+        tags: true
+      }
+    });
+  
+    return c.json(posts);
+  }catch(error){
+    return c.json(400)
+  }
+});

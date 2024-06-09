@@ -14,6 +14,8 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors';
 
+import { search } from './routes/search'
+
 
 
 export const prisma = new PrismaClient();
@@ -46,6 +48,8 @@ app.route('/comments', comments)
 app.route('/post', post)
 
 app.route('/auth', auth)
+
+app.route('/search', search)
 
 const port = 3000
 console.log(`Server is running on port ${port}`)
