@@ -28,7 +28,6 @@ app.use(
   }),
   etag(),
   logger(),
-  apiAuth(),
 )
 
 
