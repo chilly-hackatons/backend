@@ -12,8 +12,8 @@ import { comments } from './routes/comments'
 import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
-import { profile } from './routes/profile'
-import { serve } from '@hono/node-server'
+
+import { search } from './routes/search'
 
 export const prisma = new PrismaClient()
 
@@ -21,7 +21,12 @@ export const app = new Hono()
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:4173', 'hackaton-404.ru', 'https://frontend-drab-one-85.vercel.app'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:4173',
+      'hackaton-404.ru',
+      'https://frontend-drab-one-85.vercel.app',
+    ],
     maxAge: 600,
     credentials: true,
   }),
@@ -29,7 +34,6 @@ app.use(
   logger(),
   apiAuth()
 )
-
 
 app.get('/', (c) => c.text('Hello World!'))
 
@@ -72,6 +76,8 @@ app.route('/comments', comments)
 app.route('/post', post)
 
 app.route('/auth', auth)
+
+app.route('/search', search)
 
 app.route('/profile', profile)
 
