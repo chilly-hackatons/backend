@@ -1,7 +1,10 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
+import { jwtAuth } from '../middlewares'
 
 export const vacancy = new Hono()
+
+vacancy.use(jwtAuth())
 
 vacancy.get('/', async (c) => {
   const allVacancies = await prisma.vacancy.findMany({
@@ -113,27 +116,57 @@ vacancy.delete('/:id', async (c) => {
 vacancy.get('/:id', async (c) => {
   const id = c.req.param('id')
 
-  const vacancy = await prisma.vacancy.findUnique({
-    where: {
-      id: Number(id),
-    },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      createdAt: true,
-    },
-  })
+  const userId = c.req.query('userId')
 
-  return c.json(vacancy)
+  try {
+    const vacancy = await prisma.vacancy.findUniqueOrThrow({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        applications: {
+          include: {
+            applicant: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const usersRespondedLists = vacancy.applications.map((application) => {
+      return application.applicant.userId
+    })
+
+    const isRespondedToVacancy = usersRespondedLists.includes(Number(userId))
+
+    const { applications, ...vacancyData } = vacancy
+
+
+    return c.json({
+      ...vacancyData,
+      isRespondedToVacancy,
+    })
+  } catch (error) {
+    return c.json(404)
+  }
 })
-
 vacancy.patch('/vacancy-respond', async (c) => {
   const { applicantId, vacancyId } = await c.req.json()
 
+  const applicantExists = await prisma.applicant.findUnique({
+    where: { userId: Number(applicantId) },
+  })
+
+  if (!applicantExists) {
+    return c.json({ message: 'Applicant not found' }, 404)
+  }
+
   const existingApplication = await prisma.application.findFirst({
     where: {
-      applicantId: Number(applicantId),
+      applicantId: Number(applicantExists.id),
       vacancyId: Number(vacancyId),
     },
   })
@@ -144,10 +177,35 @@ vacancy.patch('/vacancy-respond', async (c) => {
 
   const application = await prisma.application.create({
     data: {
-      applicantId,
-      vacancyId,
+      applicant: {
+        connect: {
+          id: Number(applicantExists.id),
+        },
+      },
+      vacancy: {
+        connect: { id: Number(vacancyId) },
+      },
+    },
+    include: {
+      applicant: true,
+      vacancy: true,
     },
   })
+
+  const updatedVacancy = await prisma.vacancy.update({
+    where: {
+      id: Number(vacancyId),
+    },
+    data: {
+      applications: {
+        connect: {
+          id: Number(application.id),
+        },
+      },
+    },
+  })
+
+  return c.json(updatedVacancy)
 })
 
 vacancy.put('/:id', async (c) => {

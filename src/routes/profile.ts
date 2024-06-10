@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { prisma } from "..";
 import { jwtAuth } from "../middlewares";
+import { transformStringsToObjects } from "../helpers";
 
 
 export const profile = new Hono()
@@ -85,7 +86,7 @@ profile.patch('/:id', jwtAuth(), async (c) => {
       const userDataReturn = {
       ...userWithOutPassword,
        gitHubLink: updatedUser.applicant!.gitHubLink,
-       skills: updatedUser.applicant!.skills
+       skills: transformStringsToObjects(updatedUser.applicant!.skills)
     }
 
 
@@ -122,7 +123,7 @@ profile.patch('/job-add/:id', jwtAuth(), async (c) => {
    const userDataReturn = {
       ...userWithOutPassword,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: transformStringsToObjects(applicant.skills) }),
     }
 
   return c.json(userDataReturn, 200)
@@ -174,7 +175,7 @@ profile.patch('/job-delete/:id', jwtAuth(), async (c) => {
    const userDataReturn = {
       ...userWithOutPassword,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: applicant.skills }),
+      ...(applicant && { gitHubLink: applicant.gitHubLink, skills:transformStringsToObjects(applicant.skills) }),
     }
 
   return c.json(userDataReturn);

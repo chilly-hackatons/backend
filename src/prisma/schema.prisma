@@ -45,7 +45,7 @@ model Applicant {
   id     Int @id @default(autoincrement())
   userId Int @unique
 
-  skills Json[]
+  skills String[]
   resume String?
   gitHubLink String?
 

@@ -14,6 +14,7 @@ import { vacancy } from './routes/vacancy'
 import { cors } from 'hono/cors'
 
 import { search } from './routes/search'
+import { candidates } from './routes/candidates'
 
 export const prisma = new PrismaClient()
 
@@ -31,8 +32,7 @@ app.use(
     credentials: true,
   }),
   etag(),
-  logger(),
-  apiAuth()
+  logger()
 )
 
 app.get('/', (c) => c.text('Hello World!'))
@@ -80,6 +80,8 @@ app.route('/auth', auth)
 app.route('/search', search)
 
 app.route('/profile', profile)
+
+app.route('/candidates', candidates)
 
 const port = 3000
 console.log(`Server is running on port ${port}`)

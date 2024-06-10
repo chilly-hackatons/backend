@@ -23,3 +23,12 @@ export const generateRefreshToken = (userId : number | string) => {
 
   return token
 };
+
+export const transformStringsToObjects = (strings: string[] | undefined): { value: string, label: string }[] => {
+  if (!strings) return [];
+  
+  return strings.map(str => ({
+    value: str,
+    label: str.charAt(0).toUpperCase() + str.slice(1)
+  }));
+}
