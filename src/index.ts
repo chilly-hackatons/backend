@@ -1,20 +1,22 @@
 require('dotenv').config()
+
 import { PrismaClient } from '@prisma/client'
 
 import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
 import { post } from './routes/post'
-import { apiAuth, jwtAuth } from './middlewares'
+import { jwtAuth } from './middlewares'
 import { auth } from './routes/auth'
 
 import { comments } from './routes/comments'
 import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
+
+import { candidates } from './routes/candidates'
 import { profile } from './routes/profile'
 import { serve } from '@hono/node-server'
-import { candidates } from './routes/candidates'
 
 export const prisma = new PrismaClient()
 
@@ -22,14 +24,18 @@ export const app = new Hono()
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:4173', 'hackaton-404.ru', 'https://frontend-drab-one-85.vercel.app'],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:4173',
+      'hackaton-404.ru',
+      'https://frontend-drab-one-85.vercel.app',
+    ],
     maxAge: 600,
     credentials: true,
   }),
   etag(),
-  logger(),
+  logger()
 )
-
 
 app.get('/', (c) => c.text('Hello World!'))
 

@@ -63,6 +63,7 @@ model Post {
   createdAt DateTime @default(now())
   comments    Comment[]  
   user      User     @relation(fields: [userId], references: [id])
+  tags Tag[]
 }
 
 model Vacancy {
@@ -93,6 +94,12 @@ model Comment {
   createdAt   DateTime   @default(now())
   post        Post       @relation(fields: [postId], references: [id])
   user        User       @relation(fields: [userId], references: [id])
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
 }
 
 enum UserType {
