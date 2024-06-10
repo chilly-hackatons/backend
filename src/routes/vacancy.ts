@@ -48,22 +48,26 @@ vacancy.get('/', async (c) => {
 vacancy.get('/statistics/:id', async (c) => {
   const id = c.req.param('id')
 
-  const recruiter = await prisma.recruiter.findUniqueOrThrow({
-    where: {
-      userId: Number(id),
-    },
-  })
+  try {
+    const recruiter = await prisma.recruiter.findUniqueOrThrow({
+      where: {
+        userId: Number(id),
+      },
+    })
 
-  const vacancies = await prisma.vacancy.findMany({
-    where: {
-      recruiterId: Number(recruiter.id),
-    },
-    include: {
-      applications: true,
-    },
-  })
+    const vacancies = await prisma.vacancy.findMany({
+      where: {
+        recruiterId: Number(recruiter.id),
+      },
+      include: {
+        applications: true,
+      },
+    })
 
-  return c.json(vacancies)
+    return c.json(vacancies)
+  } catch (error) {
+    return c.json({ message: 'Something went wrong' }, 500)
+  }
 })
 
 vacancy.get('/search', async (c) => {
