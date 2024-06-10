@@ -14,7 +14,6 @@ import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
 
-import { search } from './routes/search'
 import { candidates } from './routes/candidates'
 import { profile } from './routes/profile'
 import { serve } from '@hono/node-server'
@@ -79,8 +78,6 @@ app.route('/comments', comments)
 app.route('/post', post)
 
 app.route('/auth', auth)
-
-app.route('/search', search)
 
 app.route('/profile', profile)
 
