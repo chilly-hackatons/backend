@@ -48,9 +48,15 @@ vacancy.get('/', async (c) => {
 vacancy.get('/statistics/:id', async (c) => {
   const id = c.req.param('id')
 
+  const recruiter = await prisma.recruiter.findUniqueOrThrow({
+    where: {
+      userId: Number(id),
+    },
+  })
+
   const vacancies = await prisma.vacancy.findMany({
     where: {
-      recruiterId: Number(id),
+      recruiterId: Number(recruiter.id),
     },
     include: {
       applications: true,
@@ -79,8 +85,14 @@ vacancy.get('/search', async (c) => {
 
 vacancy.post('/', async (c) => {
   const { recruiterId, title, description } = await c.req.json()
-
+  console.log(recruiterId)
   try {
+    const recruiter = await prisma.recruiter.findUniqueOrThrow({
+      where: {
+        userId: Number(recruiterId),
+      },
+    })
+
     const vacancy = await prisma.vacancy.create({
       data: {
         title,
@@ -88,7 +100,7 @@ vacancy.post('/', async (c) => {
 
         recruiter: {
           connect: {
-            id: Number(recruiterId),
+            id: Number(recruiter.id),
           },
         },
       },
@@ -96,6 +108,7 @@ vacancy.post('/', async (c) => {
 
     return c.json(vacancy)
   } catch (error) {
+    console.log(error)
     return c.json({ message: 'Vacancy already exists' }, 409)
   }
 })
