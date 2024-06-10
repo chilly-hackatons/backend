@@ -58,9 +58,6 @@ post.post('/', async (c) => {
         connect: {
           id: userId,
         },
-        // include:{
-        //   tags:true
-        // }
       },
     },
   })
@@ -99,7 +96,9 @@ post.put('/:id', async (c) => {
 //return all posts
 post.get('/', async (c) => {
   const getAllPosts = await prisma.post.findMany({
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: {
+      createdAt: 'desc',
+    },
     include: {
       tags: true,
     },
