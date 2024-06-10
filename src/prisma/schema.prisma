@@ -78,19 +78,13 @@ model Application {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  postId    Int
-  userId    Int
-  content   String
-  createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model Tag {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  posts Post[] @relation("PostToTag")
+  id          Int        @id @default(autoincrement())
+  postId      Int
+  userId      Int
+  content     String
+  createdAt   DateTime   @default(now())
+  post        Post       @relation(fields: [postId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
 }
 
 enum UserType {

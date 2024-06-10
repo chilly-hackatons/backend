@@ -15,6 +15,8 @@ post.get('/comments', async (c) => {
 post.get('/search', async (c) => {
   const searchQuery = c.req.query('searchQuery')
 
+  console.log(searchQuery)
+
   if (!searchQuery) {
     return c.json(400)
   }
@@ -71,12 +73,17 @@ post.get('/:id', async (c) => {
 
 //add post
 post.post('/', async (c) => {
-  const { userId, title, content } = await c.req.json()
-
+  const { userId, title, content, tags } = await c.req.json()
   const post = await prisma.post.create({
     data: {
       title,
       content,
+      tags: {
+        connectOrCreate: tags.map((tag: any) => ({
+          where: { name: tag },
+          create: { name: tag },
+        })),
+      },
       user: {
         connect: {
           id: userId,
@@ -119,8 +126,42 @@ post.put('/:id', async (c) => {
 //return all posts
 post.get('/', async (c) => {
   const getAllPosts = await prisma.post.findMany({
-    orderBy: [{ createdAt: 'desc' }],
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      tags: true,
+    },
   })
 
   return c.json(getAllPosts)
+})
+
+//posts by tags
+post.get('/posts', async (c) => {
+  const tagQuery = c.req.query('tag')
+  if (!tagQuery) {
+    return c.json({ error: 'Invalid tag parameter' }, 400)
+  }
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        tags: {
+          some: {
+            name: {
+              in: tagQuery.split(','),
+            },
+          },
+        },
+      },
+      include: {
+        tags: true,
+      },
+    })
+
+    return c.json(posts)
+  } catch (error) {
+    return c.json(400)
+  }
 })
