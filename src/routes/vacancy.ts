@@ -94,11 +94,8 @@ vacancy.post('/', async (c) => {
       },
     })
 
-    console.log(vacancy)
-
     return c.json(vacancy)
   } catch (error) {
-    console.log(error)
     return c.json({ message: 'Vacancy already exists' }, 409)
   }
 })

@@ -15,8 +15,6 @@ post.get('/comments', async (c) => {
 post.get('/search', async (c) => {
   const searchQuery = c.req.query('searchQuery')
 
-  console.log(searchQuery)
-
   if (!searchQuery) {
     return c.json(400)
   }
