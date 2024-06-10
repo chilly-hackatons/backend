@@ -1,11 +1,12 @@
 require('dotenv').config()
+
 import { PrismaClient } from '@prisma/client'
 
 import { Hono } from 'hono'
 import { etag } from 'hono/etag'
 import { logger } from 'hono/logger'
 import { post } from './routes/post'
-import { apiAuth, jwtAuth } from './middlewares'
+import { jwtAuth } from './middlewares'
 import { auth } from './routes/auth'
 
 import { comments } from './routes/comments'
@@ -15,6 +16,8 @@ import { cors } from 'hono/cors'
 
 import { search } from './routes/search'
 import { candidates } from './routes/candidates'
+import { profile } from './routes/profile'
+import { serve } from '@hono/node-server'
 
 export const prisma = new PrismaClient()
 
