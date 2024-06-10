@@ -4,26 +4,96 @@ import { prisma } from '..'
 export const vacancy = new Hono()
 
 vacancy.get('/', async (c) => {
-  const getAllVacs = await prisma.vacancy.findMany()
+  const allVacancies = await prisma.vacancy.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
 
-  return c.json(getAllVacs)
-})
-
-vacancy.post('/', async (c) => {
-  const { recruiterId, title, description } = await c.req.json()
-  const vacancy = await prisma.vacancy.create({
-    data: {
-      title,
-      description,
+    include: {
       recruiter: {
-        connect: {
-          id: Number(recruiterId),
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
         },
       },
     },
   })
 
-  return c.json(vacancy)
+  const formattedVacancies = allVacancies.map((vacancy) => {
+    const { recruiter, recruiterId, ...vacancyData } = vacancy
+    return {
+      ...vacancyData,
+      user: {
+        id: recruiter.user.id,
+        firstName: recruiter.user.firstName,
+        lastName: recruiter.user.lastName,
+        avatar: recruiter.user.avatar,
+        companyName: recruiter.companyName,
+      },
+    }
+  })
+
+  return c.json(formattedVacancies)
+})
+
+vacancy.get('/statistics/:id', async (c) => {
+  const id = c.req.param('id')
+
+  const vacancies = await prisma.vacancy.findMany({
+    where: {
+      recruiterId: Number(id),
+    },
+    include: {
+      applications: true,
+    },
+  })
+
+  return c.json(vacancies)
+})
+
+vacancy.get('/search', async (c) => {
+  const searchQuery = c.req.query('searchQuery')
+
+  const result = await prisma.vacancy.findMany({
+    where: {
+      title: {
+        search: searchQuery,
+      },
+      description: {
+        search: searchQuery,
+      },
+    },
+  })
+
+  return c.json(result)
+})
+
+vacancy.post('/', async (c) => {
+  const { recruiterId, title, description } = await c.req.json()
+
+  try {
+    const vacancy = await prisma.vacancy.create({
+      data: {
+        title,
+        description,
+        recruiter: {
+          connect: {
+            id: Number(recruiterId),
+          },
+        },
+      },
+    })
+
+    return c.json(vacancy)
+  } catch (error) {
+    return c.json(404)
+  }
 })
 
 vacancy.delete('/:id', async (c) => {
@@ -42,13 +112,42 @@ vacancy.delete('/:id', async (c) => {
 
 vacancy.get('/:id', async (c) => {
   const id = c.req.param('id')
-  const getVac = await prisma.vacancy.findUnique({
+
+  const vacancy = await prisma.vacancy.findUnique({
     where: {
       id: Number(id),
     },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      createdAt: true,
+    },
   })
 
-  return c.json(getVac)
+  return c.json(vacancy)
+})
+
+vacancy.patch('/vacancy-respond', async (c) => {
+  const { applicantId, vacancyId } = await c.req.json()
+
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      applicantId: Number(applicantId),
+      vacancyId: Number(vacancyId),
+    },
+  })
+
+  if (existingApplication) {
+    return c.json({ message: 'Application already exists' }, 409)
+  }
+
+  const application = await prisma.application.create({
+    data: {
+      applicantId,
+      vacancyId,
+    },
+  })
 })
 
 vacancy.put('/:id', async (c) => {

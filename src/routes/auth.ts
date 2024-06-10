@@ -4,9 +4,15 @@ import { HTTPException } from 'hono/http-exception'
 import { generateAccessToken, generateRefreshToken } from '../helpers'
 import { verify } from 'hono/jwt'
 import { getCookie, setCookie } from 'hono/cookie'
+import { Applicant, Recruiter, User } from '@prisma/client'
 const bcrypt = require('bcrypt')
 
 export const auth = new Hono()
+
+interface UserWithRelations extends User {
+  recruiter?: Recruiter | null
+  applicant?: Applicant | null
+}
 
 enum UserType {
   APPLICANT = 'APPLICANT',
@@ -28,6 +34,10 @@ auth.post('/sign-in', async (c) => {
     const user = await prisma.user.findUniqueOrThrow({
       where: {
         email,
+      },
+      include: {
+        applicant: true,
+        recruiter: true,
       },
     })
 
@@ -53,15 +63,27 @@ auth.post('/sign-in', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'None',
     })
 
     const {
       refreshToken: _refreshToken,
+      recruiter,
+      applicant,
       password: _password,
       ...userData
     } = user
 
-    return c.json({ accessToken, user: userData })
+    const userDataReturn = {
+      ...userData,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
+    }
+
+    return c.json({ accessToken, user: userDataReturn })
   } catch (error) {
     return c.json(
       {
@@ -90,7 +112,7 @@ auth.post('/sign-up', async (c) => {
   }
 
   try {
-    let user
+    let user: UserWithRelations
     if (requestData.user_type === UserType.RECRUITER) {
       user = await prisma.user.create({
         data: {
@@ -100,6 +122,9 @@ auth.post('/sign-up', async (c) => {
               companyName: requestData.company_name || '',
             },
           },
+        },
+        include: {
+          recruiter: true,
         },
       })
     } else if (requestData.user_type === UserType.APPLICANT) {
@@ -112,6 +137,9 @@ auth.post('/sign-up', async (c) => {
               skills: requestData.technologies || [],
             },
           },
+        },
+        include: {
+          applicant: true,
         },
       })
     } else {
@@ -135,9 +163,24 @@ auth.post('/sign-up', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'None',
     })
 
-    const { refreshToken: _refreshToken, ...userDataReturn } = user
+    const {
+      refreshToken: _refreshToken,
+      recruiter,
+      applicant,
+      ...userData_
+    } = user
+
+    const userDataReturn = {
+      ...userData_,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
+    }
 
     return c.json({ accessToken, user: userDataReturn }, 201)
   } catch (error) {
@@ -165,6 +208,10 @@ auth.post('/refresh', async (c) => {
 
     const user = await prisma.user.findUnique({
       where: { id: Number(decoded.sub) },
+      include: {
+        applicant: true,
+        recruiter: true,
+      },
     })
 
     if (!user || user.refreshToken !== refresh_token) {
@@ -187,11 +234,26 @@ auth.post('/refresh', async (c) => {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60,
       expires: expires,
+      sameSite: 'None',
     })
 
-    const { refreshToken: _refreshToken, password, ...userData } = user
+    const {
+      refreshToken: _refreshToken,
+      password,
+      recruiter,
+      applicant,
+      ...userData
+    } = user
 
-    return c.json({ accessToken, user: userData })
+    const userDataReturn = {
+      ...userData,
+      ...(recruiter && { companyName: recruiter.companyName }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: applicant.skills,
+      }),
+    }
+    return c.json({ accessToken, user: userDataReturn })
   } catch (err) {
     return c.json({ error: 'Refresh token is invalid' }, 401)
   }

@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -79,7 +80,7 @@ model Application {
   id          Int       @id @default(autoincrement())
   applicantId Int
   vacancyId   Int
-  status      String
+  status      ApplicationStatus @default(PENDING)
   createdAt   DateTime  @default(now())
   applicant   Applicant @relation(fields: [applicantId], references: [id])
   vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
@@ -106,3 +107,8 @@ enum UserType {
   APPLICANT
 }
 
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

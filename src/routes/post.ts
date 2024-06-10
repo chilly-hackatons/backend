@@ -19,10 +19,28 @@ post.get('/:id', async (c) => {
     where: {
       id: Number(postId),
     },
+    include: {
+      comments: {
+        include: {
+          user: {
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
+          }
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }
+    },
   })
 
   return c.json(getPost)
 })
+
 //add post
 post.post('/', async (c) => {
   const { userId, title, content, tags } = await c.req.json()
@@ -81,6 +99,10 @@ post.put('/:id', async (c) => {
 //return all posts
 post.get('/', async (c) => {
   const getAllPosts = await prisma.post.findMany({
+    orderBy : [
+      {createdAt : 'desc'}
+    ]
+  }{
     include:{
       tags:true
     }
