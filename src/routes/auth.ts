@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
 import { HTTPException } from 'hono/http-exception'
-import { generateAccessToken, generateRefreshToken } from '../helpers'
+import { generateAccessToken, generateRefreshToken, transformStringsToObjects } from '../helpers'
 import { verify } from 'hono/jwt'
 import { getCookie, setCookie } from 'hono/cookie'
 import { Applicant, Recruiter, User } from '@prisma/client'
@@ -18,13 +18,6 @@ enum UserType {
   APPLICANT = 'APPLICANT',
   RECRUITER = 'RECRUITER',
 }
-
-auth.get('/', (c) => c.text('List Users'))
-
-auth.get('/:id', (c) => {
-  const id = c.req.param('id')
-  return c.text('Get Post: ' + id)
-})
 
 // log-in
 auth.post('/sign-in', async (c) => {
@@ -79,7 +72,7 @@ auth.post('/sign-in', async (c) => {
       ...(recruiter && { companyName: recruiter.companyName }),
       ...(applicant && {
         gitHubLink: applicant.gitHubLink,
-        skills: applicant.skills,
+        skills: transformStringsToObjects(applicant.skills),
       }),
     }
 
@@ -178,7 +171,7 @@ auth.post('/sign-up', async (c) => {
       ...(recruiter && { companyName: recruiter.companyName }),
       ...(applicant && {
         gitHubLink: applicant.gitHubLink,
-        skills: applicant.skills,
+        skills: transformStringsToObjects(applicant.skills),
       }),
     }
 
@@ -250,7 +243,7 @@ auth.post('/refresh', async (c) => {
       ...(recruiter && { companyName: recruiter.companyName }),
       ...(applicant && {
         gitHubLink: applicant.gitHubLink,
-        skills: applicant.skills,
+        skills: transformStringsToObjects(applicant.skills),
       }),
     }
     return c.json({ accessToken, user: userDataReturn })
