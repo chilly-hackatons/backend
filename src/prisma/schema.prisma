@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -9,60 +9,52 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-
-  firstName  String
-  lastName   String
-  patronymic String
-  posts      Post[]
-  comments     Comment[]  
-
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  password      String
+  firstName     String
+  lastName      String
+  patronymic    String
   about         String
   avatar        String?
   jobExperience Json[]
-
-  type UserType
-
-  recruiter Recruiter?
-  applicant Applicant?
-
-  refreshToken String?
-
-  createdAt DateTime @default(now())
+  type          UserType
+  createdAt     DateTime   @default(now())
+  refreshToken  String?
+  applicant     Applicant?
+  comments      Comment[]
+  posts         Post[]
+  recruiter     Recruiter?
 }
 
 model Recruiter {
   id          Int       @id @default(autoincrement())
   userId      Int       @unique
   companyName String?
-  vacancies   Vacancy[]
   user        User      @relation(fields: [userId], references: [id])
+  vacancies   Vacancy[]
 }
 
 model Applicant {
-  id     Int @id @default(autoincrement())
-  userId Int @unique
-
-  skills String[]
-  resume String?
-  gitHubLink String?
-
+  id           Int           @id @default(autoincrement())
+  userId       Int           @unique
+  resume       String?
+  gitHubLink   String?
   projectsList Json[]
-
-  user        User          @relation(fields: [userId], references: [id])
-  Application Application[]
+  skills       String[]
+  user         User          @relation(fields: [userId], references: [id])
+  Application  Application[]
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   userId    Int
   title     String
   content   String
-  createdAt DateTime @default(now())
-  comments    Comment[]  
-  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  comments  Comment[]
+  user      User      @relation(fields: [userId], references: [id])
+  tags      Tag[]     @relation("PostToTag")
 }
 
 model Vacancy {
@@ -71,28 +63,34 @@ model Vacancy {
   title        String
   description  String
   createdAt    DateTime      @default(now())
-  recruiter    Recruiter     @relation(fields: [recruiterId], references: [id])
   applications Application[]
+  recruiter    Recruiter     @relation(fields: [recruiterId], references: [id])
 }
 
 model Application {
-  id          Int       @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   applicantId Int
   vacancyId   Int
+  createdAt   DateTime          @default(now())
   status      ApplicationStatus @default(PENDING)
-  createdAt   DateTime  @default(now())
-  applicant   Applicant @relation(fields: [applicantId], references: [id])
-  vacancy     Vacancy   @relation(fields: [vacancyId], references: [id])
+  applicant   Applicant         @relation(fields: [applicantId], references: [id])
+  vacancy     Vacancy           @relation(fields: [vacancyId], references: [id])
 }
 
 model Comment {
-  id          Int        @id @default(autoincrement())
-  postId      Int
-  userId      Int
-  content     String
-  createdAt   DateTime   @default(now())
-  post        Post       @relation(fields: [postId], references: [id])
-  user        User       @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[] @relation("PostToTag")
 }
 
 enum UserType {

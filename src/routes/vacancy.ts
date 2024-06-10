@@ -85,6 +85,7 @@ vacancy.post('/', async (c) => {
       data: {
         title,
         description,
+
         recruiter: {
           connect: {
             id: Number(recruiterId),
@@ -93,9 +94,12 @@ vacancy.post('/', async (c) => {
       },
     })
 
+    console.log(vacancy)
+
     return c.json(vacancy)
   } catch (error) {
-    return c.json(404)
+    console.log(error)
+    return c.json({ message: 'Vacancy already exists' }, 409)
   }
 })
 
@@ -143,7 +147,6 @@ vacancy.get('/:id', async (c) => {
     const isRespondedToVacancy = usersRespondedLists.includes(Number(userId))
 
     const { applications, ...vacancyData } = vacancy
-
 
     return c.json({
       ...vacancyData,
