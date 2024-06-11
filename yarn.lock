@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@asteasolutions/zod-to-openapi@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@asteasolutions/zod-to-openapi/-/zod-to-openapi-7.0.0.tgz#8713b2171000521019b5e69120f3ccbbffde6bbe"
+  integrity sha512-rJRKHD2m6nUb/9ZheeN8nqOURX24WTzY8Sex1ZKT0Kpx+xfpRcD0fTD6vEeXNHGaDGxzu65Jj/jb2x6nLTjcMw==
+  dependencies:
+    openapi3-ts "^4.1.2"
+
 "@esbuild/aix-ppc64@0.20.2":
   version "0.20.2"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.20.2.tgz#a70f4ac11c6a1dfc18b8bbb13284155d933b9537"
@@ -121,6 +128,24 @@
   version "1.11.1"
   resolved "https://registry.npmjs.org/@hono/node-server/-/node-server-1.11.1.tgz"
   integrity sha512-GW1Iomhmm1o4Z+X57xGby8A35Cu9UZLL7pSMdqDBkD99U5cywff8F+8hLk5aBTzNubnsFAvWQ/fZjNwPsEn9lA==
+
+"@hono/swagger-ui@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@hono/swagger-ui/-/swagger-ui-0.2.2.tgz#6115a551154e8ec602bf863e6e5780cc8c1a7820"
+  integrity sha512-Bco6XdKkTP7yIVWXpquLQayvjwzDmsmsESjF7VcrU/ZPTYafGvvpHf7Z6PHTWyp+JpdYORZXlyZ75T3At2KfAA==
+
+"@hono/zod-openapi@^0.14.2":
+  version "0.14.2"
+  resolved "https://registry.yarnpkg.com/@hono/zod-openapi/-/zod-openapi-0.14.2.tgz#cb60b5a53ac2e1f11716c56cb8152cc53165445c"
+  integrity sha512-nt4TCMwGebajiJ5QEZ2QOVRp3N7GMLs1P7csNQJSu6Aean4D+8TWgZTaAJSytLvVZWy90qnBbpRlVSS6C6M+0g==
+  dependencies:
+    "@asteasolutions/zod-to-openapi" "^7.0.0"
+    "@hono/zod-validator" "0.2.2"
+
+"@hono/zod-validator@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.2.2.tgz#929a1c40aee5eac1ed9c84094d6d977e0b70187a"
+  integrity sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==
 
 "@mapbox/node-pre-gyp@^1.0.11":
   version "1.0.11"
@@ -509,6 +534,13 @@ once@^1.3.0:
   dependencies:
     wrappy "1"
 
+openapi3-ts@^4.1.2:
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/openapi3-ts/-/openapi3-ts-4.3.3.tgz#de43a2f2fab912939495c169b92d81fe78a4ec10"
+  integrity sha512-LKkzBGJcZ6wdvkKGMoSvpK+0cbN5Xc3XuYkJskO+vjEQWJgs1kgtyUk0pjf8KwPuysv323Er62F5P17XQl96Qg==
+  dependencies:
+    yaml "^2.4.5"
+
 path-is-absolute@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
@@ -666,3 +698,13 @@ yallist@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
+
+yaml@^2.4.5:
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.4.5.tgz#60630b206dd6d84df97003d33fc1ddf6296cca5e"
+  integrity sha512-aBx2bnqDzVOyNKfsysjA2ms5ZlnjSAW2eG3/L5G/CSujfjLJTJsEw1bGw8kCf04KodQWk1pxlGnZ56CRxiawmg==
+
+zod@^3.23.8:
+  version "3.23.8"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==

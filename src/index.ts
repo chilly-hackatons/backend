@@ -13,14 +13,16 @@ import { comments } from './routes/comments'
 import { vacancy } from './routes/vacancy'
 
 import { cors } from 'hono/cors'
+import { swaggerUI } from "@hono/swagger-ui";
+import { OpenAPIHono } from "@hono/zod-openapi";
 
 import { candidates } from './routes/candidates'
 import { profile } from './routes/profile'
 import { serve } from '@hono/node-server'
 
-export const prisma = new PrismaClient()
 
-export const app = new Hono()
+export const prisma = new PrismaClient();
+export const app = new OpenAPIHono();
 
 app.use(
   cors({
@@ -49,6 +51,17 @@ app.get('/users', jwtAuth(), async (c) => {
   })
   return c.json(allUsers)
 })
+
+
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+      version: "1.0.0",
+      title: "My API",
+  },
+});
+
+app.get("/ui", swaggerUI({ url: "/doc" }));
 
 app.get('/user/:id', jwtAuth(), async (c) => {
   const id = c.req.param('id')
