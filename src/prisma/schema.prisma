@@ -65,6 +65,7 @@ model Vacancy {
   createdAt    DateTime      @default(now())
   applications Application[]
   recruiter    Recruiter     @relation(fields: [recruiterId], references: [id])
+  tags VacancyTag[]
 }
 
 model Application {
@@ -91,7 +92,15 @@ model Tag {
   id    Int    @id @default(autoincrement())
   name  String @unique
   posts Post[]
+  
 }
+
+model VacancyTag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  vacancys Vacancy[]
+}
+
 
 enum UserType {
   RECRUITER
