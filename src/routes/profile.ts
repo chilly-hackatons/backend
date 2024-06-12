@@ -1,11 +1,9 @@
-import { Hono } from "hono";
-import { prisma } from "..";
-import { jwtAuth } from "../middlewares";
-import { transformStringsToObjects } from "../helpers";
-
+import { Hono } from 'hono'
+import { prisma } from '..'
+import { jwtAuth } from '../middlewares'
+import { transformStringsToObjects } from '../helpers'
 
 export const profile = new Hono()
-
 
 profile.patch('/:id', jwtAuth(), async (c) => {
   const id = c.req.param('id')
@@ -20,9 +18,9 @@ profile.patch('/:id', jwtAuth(), async (c) => {
     companyName,
 
     userType,
-    
+
     gitHubLink,
-    skills
+    skills,
   } = await c.req.json()
 
   if (userType === 'RECRUITER') {
@@ -47,14 +45,13 @@ profile.patch('/:id', jwtAuth(), async (c) => {
       },
     })
 
+    const { password, refreshToken, recruiter, ...userWithOutPassword } =
+      updatedUser
 
-    const {password, refreshToken, recruiter, ...userWithOutPassword} = updatedUser
-
-      const userDataReturn = {
+    const userDataReturn = {
       ...userWithOutPassword,
-       companyName: updatedUser.recruiter!.companyName
+      companyName: updatedUser.recruiter!.companyName,
     }
-
 
     return c.json(userDataReturn, 200)
   } else if (userType === 'APPLICANT') {
@@ -79,16 +76,15 @@ profile.patch('/:id', jwtAuth(), async (c) => {
         applicant: true,
       },
     })
-    
-    
-    const {password, refreshToken, applicant, ...userWithOutPassword} = updatedUser
 
-      const userDataReturn = {
+    const { password, refreshToken, applicant, ...userWithOutPassword } =
+      updatedUser
+
+    const userDataReturn = {
       ...userWithOutPassword,
-       gitHubLink: updatedUser.applicant!.gitHubLink,
-       skills: transformStringsToObjects(updatedUser.applicant!.skills)
+      gitHubLink: updatedUser.applicant!.gitHubLink,
+      skills: transformStringsToObjects(updatedUser.applicant!.skills),
     }
-
 
     return c.json(userDataReturn, 200)
   } else {
@@ -97,46 +93,53 @@ profile.patch('/:id', jwtAuth(), async (c) => {
 })
 
 profile.patch('/job-add/:id', jwtAuth(), async (c) => {
-  const jobData  = await c.req.json()
+  const jobData = await c.req.json()
 
   const id = c.req.param('id')
 
   try {
     const updatedJob = await prisma.user.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      jobExperience: {
-        push: jobData,
-      }
-    },
-    include: {
-      applicant: true,
-      recruiter: true,
-    },
-  })
+      where: {
+        id: Number(id),
+      },
+      data: {
+        jobExperience: {
+          push: jobData,
+        },
+      },
+      include: {
+        applicant: true,
+        recruiter: true,
+      },
+    })
 
-  const { password, refreshToken, recruiter, applicant, ...userWithOutPassword } = updatedJob
+    const {
+      password,
+      refreshToken,
+      recruiter,
+      applicant,
+      ...userWithOutPassword
+    } = updatedJob
 
-
-   const userDataReturn = {
+    const userDataReturn = {
       ...userWithOutPassword,
       ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills: transformStringsToObjects(applicant.skills) }),
+      ...(applicant && {
+        gitHubLink: applicant.gitHubLink,
+        skills: transformStringsToObjects(applicant.skills),
+      }),
     }
 
-  return c.json(userDataReturn, 200)
+    return c.json(userDataReturn, 200)
   } catch (error) {
     return c.json({ message: 'User not found' }, 404)
   }
 })
 
 profile.patch('/job-delete/:id', jwtAuth(), async (c) => {
-  const id = c.req.param('id');
+  const id = c.req.param('id')
 
-  const { companyTitle } = await c.req.json();
-
+  const { companyTitle } = await c.req.json()
 
   const user = await prisma.user.findUnique({
     where: {
@@ -145,14 +148,16 @@ profile.patch('/job-delete/:id', jwtAuth(), async (c) => {
     select: {
       jobExperience: true,
     },
-  });
+  })
 
   if (!user) {
-    return c.json({ error: 'User not found' }, 404);
+    return c.json({ error: 'User not found' }, 404)
   }
 
   // Удаляем объект с заданным jobTitle из jobExperience
-  const updatedJobExperience = user.jobExperience.filter((job: any) => job.companyTitle !== companyTitle);
+  const updatedJobExperience = user.jobExperience.filter(
+    (job: any) => job.companyTitle !== companyTitle
+  )
 
   // Обновляем поле jobExperience в базе данных
   const updatedUser = await prisma.user.update({
@@ -160,23 +165,32 @@ profile.patch('/job-delete/:id', jwtAuth(), async (c) => {
       id: Number(id),
     },
     data: {
-      jobExperience: updatedJobExperience.map(job => JSON.parse(JSON.stringify(job))),
+      jobExperience: updatedJobExperience.map((job) =>
+        JSON.parse(JSON.stringify(job))
+      ),
     },
     include: {
       applicant: true,
       recruiter: true,
     },
-  });
+  })
 
+  const {
+    password,
+    refreshToken,
+    recruiter,
+    applicant,
+    ...userWithOutPassword
+  } = updatedUser
 
-   const { password, refreshToken, recruiter, applicant, ...userWithOutPassword } = updatedUser
+  const userDataReturn = {
+    ...userWithOutPassword,
+    ...(recruiter && { companyName: recruiter.companyName }),
+    ...(applicant && {
+      gitHubLink: applicant.gitHubLink,
+      skills: transformStringsToObjects(applicant.skills),
+    }),
+  }
 
-
-   const userDataReturn = {
-      ...userWithOutPassword,
-      ...(recruiter && { companyName: recruiter.companyName }),
-      ...(applicant && { gitHubLink: applicant.gitHubLink, skills:transformStringsToObjects(applicant.skills) }),
-    }
-
-  return c.json(userDataReturn);
-});
+  return c.json(userDataReturn)
+})

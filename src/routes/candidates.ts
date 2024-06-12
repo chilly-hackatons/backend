@@ -75,28 +75,29 @@ candidates.get('/candidates-feedback/:vacancyId', async (c) => {
             applicant: {
               include: {
                 user: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     })
 
     const formattedCandidates = result.applications.map((application) => {
-      const {password, type, refreshToken,  ...userData} = application.applicant.user
-      const {id, skills, user, userId, ...applicationData} = application.applicant
+      const { password, type, refreshToken, ...userData } =
+        application.applicant.user
+      const { id, skills, user, userId, ...applicationData } =
+        application.applicant
       return {
         ...userData,
         ...applicationData,
         skills: transformStringsToObjects(application.applicant.skills),
+        status: application.status,
       }
     })
 
-
-
-
     return c.json(formattedCandidates)
   } catch (error) {
+    console.log(error)
     return c.json({ message: 'Something went wrong' }, 500)
   }
 })

@@ -1,7 +1,11 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
 import { HTTPException } from 'hono/http-exception'
-import { generateAccessToken, generateRefreshToken, transformStringsToObjects } from '../helpers'
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  transformStringsToObjects,
+} from '../helpers'
 import { verify } from 'hono/jwt'
 import { getCookie, setCookie } from 'hono/cookie'
 import { Applicant, Recruiter, User } from '@prisma/client'
