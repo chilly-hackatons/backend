@@ -199,3 +199,69 @@ candidates.openapi(searchRoute, (c) => {
     200
   )
 })
+
+const applicantRoute = createRoute({
+  method: 'get',
+  path: '/applicant/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            refreshToken: z.string(),
+            userId: z.number(),
+            resume: z.string(),
+            projectsList: z.object({}).array(),
+            skills: z.string({}),
+            gitHubLink: z.string(),
+            value: z.string(),
+            label: z.string(),
+            accessToken: z.string(),
+            firstName: z.string(),
+            lastName: z.string(),
+            id: z.number(),
+            email: z.string(),
+            password: z.string(),
+            patronymic: z.string(),
+            about: z.string(),
+            avatar: z.string(),
+            jobExperience: z.object({}).array(),
+            type: z.string(),
+            createdAt: z.string(),
+
+          }),
+        },
+      },
+      description: 'applicant response',
+    },
+  },
+  tags: ['candidates'], // <- Add tag here
+})
+
+candidates.openapi(applicantRoute, (c) => {
+  return c.json(
+    {
+      refreshToken: '12312312312312312312',
+      userId: 2,
+      resume: 'all gucci',
+      projectsList: [{}],
+      skills: '1231231231231',
+      gitHubLink: 'https://github.com/uglynhumble',
+      value:'3123123123',
+      label: 'google',
+      accessToken: 'sign-up success',
+      firstName: 'vasya',
+      lastName: 'hershtein',
+      id: 1,
+      email: 'vasyahershtein@gmail.com',
+      password: 'qwerty123123',
+      patronymic: 'alekseevich',
+      about: 'backend developer',
+      avatar: '',
+      jobExperience: [{}],
+      type: 'recrutieer',
+      createdAt: new Date(),
+    },
+    200
+  )
+})
