@@ -88,7 +88,7 @@ vacancy.get('/search', async (c) => {
 })
 
 vacancy.post('/', async (c) => {
-  const { recruiterId, title, description } = await c.req.json()
+  const { recruiterId, title, description,tags } = await c.req.json()
   console.log(recruiterId)
   try {
     const recruiter = await prisma.recruiter.findUniqueOrThrow({
@@ -96,11 +96,17 @@ vacancy.post('/', async (c) => {
         userId: Number(recruiterId),
       },
     })
-
+    
     const vacancy = await prisma.vacancy.create({
       data: {
         title,
         description,
+        tags: {
+          connectOrCreate: tags.map((tag: any) => ({
+            where: { name: tag },
+            create: { name: tag },
+          })),
+        },
 
         recruiter: {
           connect: {
