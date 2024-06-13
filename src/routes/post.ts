@@ -179,7 +179,7 @@ const addPostRoute = createRoute({
             content: z.any(),
             userId: z.number(),
             title: z.any(),
-            tags: z.string()
+            tags: z.object({}).array()
           }),
         },
       },
@@ -194,7 +194,7 @@ const addPostRoute = createRoute({
             content: z.any(),
             userId: z.number(),
             title: z.any(),
-            tags: z.string()
+            tags: z.object({}).array()
           }),
         },
       },
@@ -210,7 +210,7 @@ post.openapi(addPostRoute, (c) => {
     content: 'explain feratures',
     userId: 1,
     title: 'devops',
-    tags: "dev"
+    tags: [{}]
     },
     200
   )
@@ -235,7 +235,7 @@ const postByIdRoute = createRoute({
           }),
         },
       },
-      description: 'search candidates response',
+      description: ' код отвечает за обработку запроса на создание нового поста, связывая его с существующими или новыми тегами и пользователем, а затем возвращает созданный пост клиенту.',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -270,7 +270,7 @@ const deletePostRoute = createRoute({
           }),
         },
       },
-      description: 'delete post response',
+      description: ' код отвечает за удаление поста.Условия удаления указываются в объекте where. Здесь указывается, что нужно удалить запись, у которой идентификатор (id) совпадает с переданным postId.  ',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -299,7 +299,7 @@ const changePostRoute = createRoute({
           }),
         },
       },
-      description: 'change post response',
+      description: ' фрагмент кода для обновления существующего поста.Условия обновления указываются в объекте where. Здесь указывается, что нужно обновить запись, у которой идентификатор (id) совпадает с переданным updatedPostId.',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -333,7 +333,7 @@ const returnAllPostsRoute = createRoute({
           }),
         },
       },
-      description: 'delete post response',
+      description: 'фрагмент кода, для получения всех существующих постов.Параметр orderBy указывает, что посты должны быть отсортированы по полю createdAt в порядке убывания (desc). Это означает, что самые новые посты будут первыми в списке.Параметр include указывает, что вместе с постами нужно включить связанные теги. Это позволяет получить все теги, связанные с каждым постом.',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -366,7 +366,7 @@ const postsByTagsRoute = createRoute({
           }),
         },
       },
-      description: 'posts by tags response',
+      description: 'фрагмент кода, для получения всех постов, по определенным тэгам.Условия поиска указаны в объекте where. Указывается, что пост должен содержать хотя бы один тег (some), имя которого находится в массиве тегов, полученном путем разделения строки tagQuery на подстроки.Параметр include указывает, что вместе с постами нужно включить связанные теги. Это позволяет получить все теги, связанные с каждым постом.',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -394,7 +394,7 @@ const searchPostRoute = createRoute({
           }),
         },
       },
-      description: 'change post response',
+      description: 'фрагмент кода для поиска определенных постов.Условия поиска указаны в объекте where с использованием логического оператора OR. Указывается, что пост должен соответствовать хотя бы одному из условий.Параметр include указывает, что вместе с постами нужно включить связанные теги. Это позволяет получить все теги, связанные с каждым постом.',
     },
   },
   tags: ['posts'], // <- Add tag here
@@ -428,7 +428,7 @@ const postWithCommentsRoute = createRoute({
           }),
         },
       },
-      description: 'change post response',
+      description: 'фрагмент кода для получения поста с коментариями.Параметр include указывает, что нужно включить связанные с постом записи из таблицы comments. Это позволяет получить все комментарии, связанные с каждым постом.',
     },
   },
   tags: ['posts'], // <- Add tag here

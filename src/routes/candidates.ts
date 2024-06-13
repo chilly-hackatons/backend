@@ -171,7 +171,7 @@ const searchRoute = createRoute({
           }),
         },
       },
-      description: 'search candidates response',
+      description: 'фрагмент кода для поиска соискателей по определенным параметрам.Условия поиска указываются в объекте where. Ищутся пользователи, у которых:Поле type равно APPLICANT.Вложенное поле skills у applicant содержит (has) навык, который начинается с заглавной буквы и остальной части строки searchQuery.Параметр include указывает, что нужно включить связанные данные из таблицы applicant.Результат запроса форматируется, чтобы удалить чувствительные данные (refreshToken, password) и ненужное поле type. Также включаются дополнительные поля из связанных данных applicant.Форматированный список кандидатов возвращается в виде JSON-ответа.',
     },
   },
   tags: ['candidates'], // <- Add tag here
@@ -208,7 +208,6 @@ const applicantRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            refreshToken: z.string(),
             userId: z.number(),
             resume: z.string(),
             projectsList: z.object({}).array(),
@@ -216,12 +215,10 @@ const applicantRoute = createRoute({
             gitHubLink: z.string(),
             value: z.string(),
             label: z.string(),
-            accessToken: z.string(),
             firstName: z.string(),
             lastName: z.string(),
             id: z.number(),
             email: z.string(),
-            password: z.string(),
             patronymic: z.string(),
             about: z.string(),
             avatar: z.string(),
@@ -232,7 +229,7 @@ const applicantRoute = createRoute({
           }),
         },
       },
-      description: 'applicant response',
+      description: 'фрагмент кода для получения всех аппликантов.Результат запроса форматируется, чтобы удалить чувствительные данные (refreshToken, password) и ненужное поле type. Также включаются дополнительные поля из связанных данных applicant',
     },
   },
   tags: ['candidates'], // <- Add tag here
@@ -241,7 +238,6 @@ const applicantRoute = createRoute({
 candidates.openapi(applicantRoute, (c) => {
   return c.json(
     {
-      refreshToken: '12312312312312312312',
       userId: 2,
       resume: 'all gucci',
       projectsList: [{}],
@@ -249,7 +245,62 @@ candidates.openapi(applicantRoute, (c) => {
       gitHubLink: 'https://github.com/uglynhumble',
       value:'3123123123',
       label: 'google',
-      accessToken: 'sign-up success',
+      firstName: 'vasya',
+      lastName: 'hershtein',
+      id: 1,
+      email: 'vasyahershtein@gmail.com',
+      password: 'qwerty123123',
+      patronymic: 'alekseevich',
+      about: 'backend developer',
+      avatar: '',
+      jobExperience: [{}],
+      type: 'recrutieer',
+      createdAt: new Date(),
+    },
+    200
+  )
+})
+
+const candidateFeedbackRoute = createRoute({
+  method: 'get',
+  path: '/candidates-feedback/:vacancyId/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.number(),
+            resume: z.string(),
+            projectsList: z.object({}).array(),
+            skills: z.string({}),
+            gitHubLink: z.string(),
+            value: z.string(),
+            firstName: z.string(),
+            lastName: z.string(),
+            email: z.string(),
+            patronymic: z.string(),
+            about: z.string(),
+            avatar: z.string(),
+            jobExperience: z.object({}).array(),
+            createdAt: z.string(),
+
+          }),
+        },
+      },
+      description: 'Форматирование выполняется следующим образом:Удаляются чувствительные данные (password, refreshToken) и ненужные поля (type) из данных пользователя.Удаляются поля id, user, и userId из данных заявителя.Добавляются дополнительные поля из связанных данных. Поле skills преобразуется из строки в объект с помощью функции transformStringsToObjects.',
+    },
+  },
+  tags: ['candidates'], // <- Add tag here
+})
+
+candidates.openapi(candidateFeedbackRoute, (c) => {
+  return c.json(
+    {
+      resume: 'all gucci',
+      projectsList: [{}],
+      skills: '1231231231231',
+      gitHubLink: 'https://github.com/uglynhumble',
+      value:'3123123123',
       firstName: 'vasya',
       lastName: 'hershtein',
       id: 1,
