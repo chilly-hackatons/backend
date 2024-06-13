@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
 import { jwtAuth } from '../middlewares'
+import { transformStringsToObjects } from '../helpers'
 
 export const vacancy = new Hono()
 
@@ -32,6 +33,7 @@ vacancy.get('/', async (c) => {
     const { recruiter, recruiterId, ...vacancyData } = vacancy
     return {
       ...vacancyData,
+      tags: transformStringsToObjects(vacancy.tags),
       user: {
         id: recruiter.user.id,
         firstName: recruiter.user.firstName,
@@ -77,18 +79,24 @@ vacancy.get('/search', async (c) => {
     where: {
       title: {
         search: searchQuery,
+        mode: 'insensitive',
       },
       description: {
         search: searchQuery,
+        mode: 'insensitive',
+      },
+      tags: {
+        has: searchQuery,
       },
     },
+
   })
 
   return c.json(result)
 })
 
 vacancy.post('/', async (c) => {
-  const { recruiterId, title, description,tags } = await c.req.json()
+  const { recruiterId, title, description, tags } = await c.req.json()
   console.log(recruiterId)
   try {
     const recruiter = await prisma.recruiter.findUniqueOrThrow({
@@ -101,12 +109,7 @@ vacancy.post('/', async (c) => {
       data: {
         title,
         description,
-        tags: {
-          connectOrCreate: tags.map((tag: any) => ({
-            where: { name: tag },
-            create: { name: tag },
-          })),
-        },
+        tags,
 
         recruiter: {
           connect: {
@@ -170,6 +173,7 @@ vacancy.get('/:id', async (c) => {
 
     return c.json({
       ...vacancyData,
+      tags: transformStringsToObjects(vacancy.tags),
       isRespondedToVacancy,
     })
   } catch (error) {

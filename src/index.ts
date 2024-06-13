@@ -27,7 +27,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:4173',
-      'hackaton-404.ru',
+      'https://hackaton-404.ru',
       'https://frontend-drab-one-85.vercel.app',
     ],
     maxAge: 600,
