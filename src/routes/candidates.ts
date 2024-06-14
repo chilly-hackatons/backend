@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import { jwtAuth } from '../middlewares'
 import { prisma } from '..'
 import { transformStringsToObjects } from '../helpers'
+import { ApplicationStatus } from '@prisma/client'
+import { vacancy } from './vacancy'
 
 export const candidates = new Hono()
 
@@ -62,25 +64,53 @@ candidates.get('/', async (c) => {
 })
 
 candidates.get('/candidates-feedback/:vacancyId', async (c) => {
+  const filterBy = c.req.query('filterBy') as ApplicationStatus | 'ALL'
+
   const vacancyId = c.req.param('vacancyId')
 
+  const isFilteredByAll = filterBy === 'ALL'
+
+  let result
+
   try {
-    const result = await prisma.vacancy.findUniqueOrThrow({
-      where: {
-        id: Number(vacancyId),
-      },
-      include: {
-        applications: {
-          include: {
-            applicant: {
-              include: {
-                user: true,
+    if (isFilteredByAll) {
+      result = await prisma.vacancy.findUniqueOrThrow({
+        where: {
+          id: Number(vacancyId),
+        },
+        include: {
+          applications: {
+            include: {
+              applicant: {
+                include: {
+                  user: true,
+                },
               },
             },
           },
         },
-      },
-    })
+      })
+    } else {
+      result = await prisma.vacancy.findUniqueOrThrow({
+        where: {
+          id: Number(vacancyId),
+        },
+        include: {
+          applications: {
+            where: {
+              status: filterBy,
+            },
+            include: {
+              applicant: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      })
+    }
 
     const formattedCandidates = result.applications.map((application) => {
       const { password, type, refreshToken, ...userData } =
@@ -96,6 +126,50 @@ candidates.get('/candidates-feedback/:vacancyId', async (c) => {
     })
 
     return c.json(formattedCandidates)
+  } catch (error) {
+    console.log(error)
+    return c.json({ message: 'Something went wrong' }, 500)
+  }
+})
+
+candidates.patch('/candidates-feedback/:vacancyId', async (c) => {
+  const vacancyId = c.req.param('vacancyId')
+
+  const { status, userId } = await c.req.json()
+
+  try {
+    const result = await prisma.user.update({
+      where: {
+        id: Number(userId),
+
+        
+      },
+      include: {
+        applicant: {
+          include: {
+            Application: true,
+          }
+        },
+      },
+      data: {
+        applicant: {
+          update: {
+            Application: {
+              updateMany: {
+                where: {
+                  vacancyId: Number(vacancyId),
+                },
+                data: {
+                  status,
+                },
+              }
+            }
+          }
+        }
+        
+      },
+    })
+    return c.json(result)
   } catch (error) {
     console.log(error)
     return c.json({ message: 'Something went wrong' }, 500)
