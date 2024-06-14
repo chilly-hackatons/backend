@@ -17,8 +17,10 @@ import { cors } from 'hono/cors'
 import { candidates } from './routes/candidates'
 import { profile } from './routes/profile'
 import { serve } from '@hono/node-server'
+import { Email } from './Email'
 
 export const prisma = new PrismaClient()
+export const EmailService = new Email()
 
 export const app = new Hono()
 

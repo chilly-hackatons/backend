@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { jwtAuth } from '../middlewares'
-import { prisma } from '..'
+import { EmailService, prisma } from '..'
 import { transformStringsToObjects } from '../helpers'
 import { ApplicationStatus } from '@prisma/client'
 import { vacancy } from './vacancy'
@@ -138,17 +138,15 @@ candidates.patch('/candidates-feedback/:vacancyId', async (c) => {
   const { status, userId } = await c.req.json()
 
   try {
-    const result = await prisma.user.update({
+    await prisma.user.update({
       where: {
         id: Number(userId),
-
-        
       },
       include: {
         applicant: {
           include: {
             Application: true,
-          }
+          },
         },
       },
       data: {
@@ -162,14 +160,36 @@ candidates.patch('/candidates-feedback/:vacancyId', async (c) => {
                 data: {
                   status,
                 },
-              }
-            }
-          }
-        }
-        
+              },
+            },
+          },
+        },
       },
     })
-    return c.json(result)
+
+    return c.json({status: status})
+  } catch (error) {
+    console.log(error)
+    return c.json({ message: 'Something went wrong' }, 500)
+  }
+})
+
+candidates.post('/send-email', async (c) => {
+  const { userId, status, vacancyId } = await c.req.json()
+
+  try {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: Number(userId),
+      },
+    })
+
+    const statusText = status === 'APPROVED' ? 'одобрен' : 'отклонен'
+
+    const text = `Твой отклик на <a href="https://hackaton-404.ru/vacancy/${vacancyId}">вакансию</a> ${statusText}`
+
+    await EmailService.sendEmail(user.email, 'Vacancy status', text)
+    return c.json({ message: 'Email send' }, 200)
   } catch (error) {
     console.log(error)
     return c.json({ message: 'Something went wrong' }, 500)
