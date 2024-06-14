@@ -34,6 +34,7 @@ app.use(
     ],
     maxAge: 600,
     credentials: true,
+    allowMethods: ['POST', 'GET', 'PATCH', 'DELETE', 'PUT'],
   }),
   etag(),
   logger()
