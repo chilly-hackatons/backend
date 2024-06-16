@@ -9,9 +9,11 @@ import {
 import { verify } from 'hono/jwt'
 import { getCookie, setCookie } from 'hono/cookie'
 import { Applicant, Recruiter, User } from '@prisma/client'
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
+import { z } from 'zod'
 const bcrypt = require('bcrypt')
 
-export const auth = new Hono()
+export const auth = new OpenAPIHono()
 
 interface UserWithRelations extends User {
   recruiter?: Recruiter | null
@@ -274,4 +276,195 @@ auth.post('/logout', async (c) => {
   } catch (err) {
     return c.json({ message: 'Invalid token' })
   }
+})
+//sign-up route
+const signupRoute = createRoute({
+  method: 'post',
+  path: '/sign-up/',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            firstName: z.string(),
+            lastName: z.string(),
+            patronymic: z.string(),
+            email: z.string(),
+            password: z.string(),
+            about: z.string(),
+            type: z.string(),
+          }),
+        },
+      },
+      description:"userData-основная информация о пользователе. Далее исходя из флага,определяем к какому типу относиться пользователь(рекрутер или аппликант).После создания пользователя создается рефреш токен и токен доступа.Далее из объекта пользователя удаляются лишние данные и отправляются клиенту с кодом 201"
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            accessToken: z.string(),
+            firstName: z.string(),
+            lastName: z.string(),
+            id: z.number(),
+            email: z.string(),
+            password: z.string(),
+            patronymic: z.string(),
+            about: z.string(),
+            avatar: z.string(),
+            jobExperience: z.object({}).array(),
+            type: z.string(),
+            createdAt: z.string(),
+          }),
+        },
+      },
+      description: 'sign-up response',
+    },
+  },
+  tags: ['auth'], // <- Add tag here
+})
+auth.openapi(signupRoute, (c) => {
+  return c.json(
+    {
+      accessToken: 'sign-up success',
+      firstName: 'vasya',
+      lastName: 'hershtein',
+      id: 1,
+      email: 'vasyahershtein@gmail.com',
+      password: 'qwerty123123',
+      patronymic: 'alekseevich',
+      about: 'backend developer',
+      avatar: '',
+      jobExperience: [{}],
+      type: 'recrutieer',
+      createdAt: new Date(),
+    },
+    200
+  )
+})
+//sign-in route
+const signinRoute = createRoute({
+  method: 'post',
+  path: '/sign-in/',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            email: z.string(),
+            password: z.string(),
+          }),
+        },
+      },
+      description:"из тела запроса забираем email & password.Попытка найти пользователя в базе данных(В запрос включены связанные данные applicant и recruiter, чтобы получить полные данные о пользователе).Далее выполняется проверка пароля, если он не верен выбрасываем ошибку(401).После успешной проверки пароля генерируются токен доступа (access token) и токен обновления (refresh token). Токен обновления сохраняется в базе данных для соответствующего пользователя.Из объекта пользователя удаляются лишние данные (refreshToken и password), формируется объект для ответа с данными пользователя, включая данные рекрутера или соискателя, если они есть. "
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            email: z.string(),
+            password: z.string(),
+
+          }),
+        },
+      },
+      description: 'sign-in response',
+    },
+  },
+  tags: ['auth'], // <- Add tag here
+})
+
+auth.openapi(signinRoute, (c) => {
+  return c.json(
+    {
+      email: 'vasyahershtein@gmail.com',
+      password: 'qwerty123123',
+    },
+    200
+  )
+})
+//refresh token route
+const refreshRoute = createRoute({
+  method: 'post',
+  path: '/refresh/',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            refreshToken: z.string(),
+           
+          }),
+        },
+      },
+      description:"Из куки извлекается токен обновления. Если токен отсутствует, выбрасывается ошибка с кодом 401.Токен обновления проверяется и декодируется.Если проверка не удалась, выбрасывается исключение.Пользователь ищется в базе данных по ID, который содержится в декодированном токене обновления.Если пользователь не найден или токен обновления не совпадает с тем, который хранится в базе данных, возвращается ошибка 401.После успешной проверки генерируются новые токены доступа и обновления.Из объекта пользователя удаляются лишние данные (refreshToken и password), формируется объект для ответа с данными пользователя, включая данные рекрутера или соискателя, если они есть."
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            refreshToken: z.string(),
+
+          }),
+        },
+      },
+      description: 'refresh token response',
+    },
+  },
+  tags: ['auth'], // <- Add tag here
+})
+
+auth.openapi(refreshRoute, (c) => {
+  return c.json(
+    {
+      refreshToken: '6a7396ffab113854a558e0f9b36232',
+    },
+    200
+  )
+})
+//logout route
+const logoutRoute = createRoute({
+  method: 'post',
+  path: '/logout/',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            refreshToken: z.string(),
+           
+          }),
+        },
+      },
+      description:"Из тела запроса извлекается refresh_token.Токен обновления проверяется и декодируется,если проверка не удалась, выбрасывается исключение.После успешной проверки и декодирования токена, в базе данных находится пользователь по ID (из декодированного токена) и обновляется его запись, устанавливая значение refreshToken в null.Если все прошло успешно, клиенту возвращается сообщение о успешном выходе с кодом 200. Если возникает ошибка, возвращается сообщение об ошибке с кодом 401"
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            refreshToken: z.string(),
+
+          }),
+        },
+      },
+      description: 'refresh token response',
+    },
+  },
+  tags: ['auth'], // <- Add tag here
+})
+
+auth.openapi(logoutRoute, (c) => {
+  return c.json(
+    {
+      refreshToken: '6a7396ffab113854a558e0f9b36232',
+    },
+    200
+  )
 })

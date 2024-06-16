@@ -1,9 +1,10 @@
-import { Hono } from 'hono'
 import { prisma } from '..'
 import { jwtAuth } from '../middlewares'
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
+import { z } from 'zod'
 import { transformStringsToObjects } from '../helpers'
 
-export const vacancy = new Hono()
+export const vacancy = new OpenAPIHono()
 
 vacancy.use(jwtAuth())
 
@@ -271,4 +272,324 @@ vacancy.put('/:id', async (c) => {
   } catch (error) {
     return c.json(404)
   }
+})
+
+
+const allVacancyRoute = createRoute({
+  method: 'get',
+  path: '/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.number(),
+            firstName: z.string(),
+            lastName: z.string(),
+            avatar: z.string(),
+            companyName: z.string(),
+            createdAt: z.string(),
+            title: z.string(),
+            description: z.string()
+            
+          }),
+        },
+      },
+      description: 'фрагмент кода для получения всех доступных вакансий.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(allVacancyRoute, (c) => {
+  return c.json(
+    {
+      id: 1,
+      firstName: 'nikita',
+      lastName: 'vasyankin',
+      avatar:'12322331232132.jpg',
+      companyName: 'google',
+      createdAt: new Date(),
+      title: 'chotko',
+      description:'devops engenier backend developer'
+    },
+    200
+  )
+})
+
+const searchVacancyRoute = createRoute({
+  method: 'get',
+  path: '/search/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.number(),
+            recrutierId: z.number(),
+            createdAt: z.string(),
+            title: z.string(),
+            description: z.string()
+            
+          }),
+        },
+      },
+      description: 'фрагмент кода для поиска конкретных ваканский.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(searchVacancyRoute, (c) => {
+  return c.json(
+    {
+      id: 1,
+      recrutierId:2,
+      createdAt: new Date(),
+      title: 'chotko',
+      description:'devops engenier backend developer'
+    },
+    200
+  )
+})
+
+const vacancyStatsRoute = createRoute({
+  method: 'get',
+  path: '/statistics/:id/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.number(),
+            applicantId: z.number(),
+            vacancyId: z.number(),
+            status: z.string(),
+            recrutierId: z.number(),
+            createdAt: z.string(),
+            title: z.string(),
+            description: z.string()
+            
+          }),
+        },
+      },
+      description: 'фрагмент кода для получения всех доступных вакансий.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(vacancyStatsRoute, (c) => {
+  return c.json(
+    {
+      id: 1,
+      applicantId:2,
+      vacancyId: 2,
+      status: 'avilible',
+      recrutierId:2,
+      createdAt: new Date(),
+      title: 'chotko',
+      description:'devops engenier backend developer'
+    },
+    200
+  )
+})
+
+const addVacancyRoute = createRoute({
+  method: 'post',
+  path: '/',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            recrutierId: z.number(),
+            tilte: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number()
+
+          }),
+        },
+      },
+      description:"в фрагменте кода описывается добавление новых вакансий для аппликантов. На вход принимаются данные рекрутера, а на выход те же данные и описание вакансии."
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            recrutierId: z.number(),
+            title: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number()
+          }),
+        },
+      },
+      description: 'search candidates response',
+    },
+  },
+  tags: ['vacancy'], 
+})
+
+vacancy.openapi(addVacancyRoute, (c) => {
+  return c.json(
+    {
+    recrutierId: 1,
+    title:'backend',
+    description:'devops backend',
+    createdAt: new Date(),
+    id: 1
+    },
+    200
+  )
+})
+
+const deleteVacancyRoute = createRoute({
+  method: 'delete',
+  path: '/:id/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            recrutierId: z.number(),
+            tilte: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number()
+
+          }),
+        },
+      },
+      description: 'фрагмент кода описывает удаление вакансии по уникальному идентефикатору.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(deleteVacancyRoute, (c) => {
+  return c.json(
+    {
+    recrutierId: 1,
+    tilte:'23123123',
+    description:'devops backend',
+    createdAt: new Date(),
+    id: 1
+    },
+    200
+  )
+})
+
+const vacancyByIdRoute = createRoute({
+  method: 'get',
+  path: '/:id/',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            recrutierId: z.number(),
+            tilte: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number(),
+            status: z.string(),
+          }),
+        },
+      },
+      description: 'фрагмент кода для возврата определенной вакансии(по уникальному идентефикатору).',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(vacancyByIdRoute, (c) => {
+  return c.json(
+    {
+    recrutierId: 1,
+    tilte:'23123123',
+    description:'devops backend',
+    createdAt: new Date(),
+    id: 1,
+    status: 'avilible'
+    },
+    200
+  )
+})
+
+const vacancyRespondRoute = createRoute({
+  method: 'patch',
+  path: '/vacancy-respond',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            applicantId: z.number(),
+            vacancyId: z.number(),
+            recrutierId: z.number(),
+            tilte: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number()
+          }),
+        },
+      },
+      description: 'фрагмент кода описывает отклик аппликанта на вакансию, на вход принимаются id вакансии и id соискателя.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(vacancyRespondRoute, (c) => {
+  return c.json(
+    {
+      applicantId:1,
+      recrutierId: 1,
+      tilte:'23123123',
+      description:'devops backend',
+      createdAt: new Date(),
+      id: 1,
+      vacancyId: 1
+    },
+    200
+  )
+})
+
+const updateVacancyRoute = createRoute({
+  method: 'patch',
+  path: '/:id',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            recrutierId: z.number(),
+            tilte: z.string(),
+            description: z.string(),
+            createdAt: z.string(),
+            id: z.number()
+          }),
+        },
+      },
+      description: 'фрагмент кода описывает обновление вакансии.',
+    },
+  },
+  tags: ['vacancy'],
+})
+
+vacancy.openapi(updateVacancyRoute, (c) => {
+  return c.json(
+    {
+      recrutierId: 1,
+      tilte:'23123123',
+      description:'devops backend',
+      createdAt: new Date(),
+      id: 1
+    },
+    200
+  )
 })
