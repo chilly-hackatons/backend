@@ -26,7 +26,7 @@ prisma
 npx prisma studio
 
 ```
-
+dev
 
 ```
 yarn install
