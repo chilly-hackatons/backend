@@ -1,4 +1,3 @@
-import { Hono } from 'hono'
 import { prisma } from '..'
 import { jwtAuth } from '../middlewares'
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
