@@ -32,7 +32,11 @@ post.get('/search', async (c) => {
       },
     })
 
-    return c.json(post)
+    const retunData = post.map((post) => {
+      return { ...post, tags: transformStringsToObjects(post.tags) }
+    })
+
+    return c.json(retunData)
   } catch (error) {
     return c.json({ error: 'Internal Server Error' }, 500)
   }
