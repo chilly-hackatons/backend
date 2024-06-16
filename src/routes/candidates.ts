@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { jwtAuth } from '../middlewares'
-import { EmailService, prisma } from '..'
+import { app, EmailService, prisma } from '..'
 import { transformStringsToObjects } from '../helpers'
 import { ApplicationStatus } from '@prisma/client'
 import { vacancy } from './vacancy'
@@ -193,5 +193,27 @@ candidates.post('/send-email', async (c) => {
   } catch (error) {
     console.log(error)
     return c.json({ message: 'Something went wrong' }, 500)
+  }
+})
+
+candidates.get('/:id', async (c) => {
+  const id = c.req.param('id')
+
+  try {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: Number(id),
+        type: 'APPLICANT',
+      },
+      include: {
+        applicant: true,
+      },
+    })
+
+    const { password, refreshToken, applicant,  ...userData } = user
+
+    return c.json({...userData, gitHubLink: applicant?.gitHubLink,   skills: transformStringsToObjects(applicant?.skills)})
+  } catch (error) {
+    return c.json({ message: 'User not found' }, 404)
   }
 })

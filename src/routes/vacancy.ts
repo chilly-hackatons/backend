@@ -77,22 +77,38 @@ vacancy.get('/search', async (c) => {
 
   const result = await prisma.vacancy.findMany({
     where: {
-      title: {
-        search: searchQuery,
-        mode: 'insensitive',
-      },
-      description: {
-        search: searchQuery,
-        mode: 'insensitive',
-      },
-      tags: {
-        has: searchQuery,
-      },
+     OR: [
+       {
+        title: {
+          search: searchQuery
+        }
+       },
+       {
+        description: {
+          search: searchQuery
+        }
+       },
+       {
+        tags: {
+          has: searchQuery
+        }
+       }
+     ]
+
     },
 
   })
 
-  return c.json(result)
+  const retunData = result.map((vacancy) => {
+    const {  ...vacancyData } = vacancy
+    return {
+      ...vacancyData,
+      tags: transformStringsToObjects(vacancy.tags),
+    }
+  })
+
+ 
+  return c.json(retunData)
 })
 
 vacancy.post('/', async (c) => {
