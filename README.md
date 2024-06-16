@@ -20,6 +20,8 @@ email: test@mail.ru<br>
 pass : 123456<br>
 <br>
 
+swagger - https://hackaton-api.ru/docs
+
 
 prisma
 ```
