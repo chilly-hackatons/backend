@@ -32,7 +32,11 @@ comments.post('/', async (c) => {
       },
     },
   })
-  const { userId : userIdComment, postId : postIdComment, ...commentWithoutUserId } = comment
+  const {
+    userId: userIdComment,
+    postId: postIdComment,
+    ...commentWithoutUserId
+  } = comment
   return c.json(commentWithoutUserId)
 })
 

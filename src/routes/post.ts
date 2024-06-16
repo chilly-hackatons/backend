@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { prisma } from '..'
+import { transformStringsToObjects } from '../helpers'
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
 import { z } from 'zod'
 
@@ -32,12 +33,13 @@ post.get('/search', async (c) => {
           search: searchQuery,
         },
       },
-      include: {
-        tags: true,
-      },
     })
 
-    return c.json(post)
+    const retunData = post.map((post) => {
+      return { ...post, tags: transformStringsToObjects(post.tags) }
+    })
+
+    return c.json(retunData)
   } catch (error) {
     return c.json({ error: 'Internal Server Error' }, 500)
   }
@@ -46,7 +48,9 @@ post.get('/search', async (c) => {
 //return post
 post.get('/:id', async (c) => {
   const postId = c.req.param('id')
-  const getPost = await prisma.post.findUnique({
+  
+  try {
+    const getPost = await prisma.post.findUniqueOrThrow({
     where: {
       id: Number(postId),
     },
@@ -69,7 +73,10 @@ post.get('/:id', async (c) => {
     },
   })
 
-  return c.json(getPost)
+  return c.json({...getPost, tags: transformStringsToObjects(getPost.tags)})
+  } catch (error) {
+    return c.json({ error: 'Internal Server Error' }, 500)
+  }
 })
 
 //add post
@@ -79,12 +86,7 @@ post.post('/', async (c) => {
     data: {
       title,
       content,
-      tags: {
-        connectOrCreate: tags.map((tag: any) => ({
-          where: { name: tag },
-          create: { name: tag },
-        })),
-      },
+      tags,
       user: {
         connect: {
           id: userId,
@@ -130,12 +132,16 @@ post.get('/', async (c) => {
     orderBy: {
       createdAt: 'desc',
     },
-    include: {
-      tags: true,
-    },
   })
 
-  return c.json(getAllPosts)
+  const retunData = getAllPosts.map((post) => {
+    return {
+      ...post,
+      tags: transformStringsToObjects(post.tags),
+    }
+  })
+
+  return c.json(retunData)
 })
 
 //posts by tags
@@ -147,18 +153,11 @@ post.get('/posts', async (c) => {
 
   try {
     const posts = await prisma.post.findMany({
-      where: {
-        tags: {
-          some: {
-            name: {
-              in: tagQuery.split(','),
-            },
-          },
-        },
-      },
-      include: {
-        tags: true,
-      },
+     where: {
+       tags: {
+         has: `${tagQuery[0].toUpperCase()}${tagQuery.slice(1)}`,
+       }
+     }
     })
 
     return c.json(posts)
