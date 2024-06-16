@@ -10,13 +10,16 @@ EMAIL_PASSWORD = lbnwztiauskscwhc
 EMAIL = hackaton404@gmail.com
 ```
 
-Можно либо зарегестрироваться либо сразу зайти под уже зарегистрованными юзерами
-- Рекрутер
-email: test_2@mail.ru
-pass : 123456
-- Соискатель
-email: test@mail.ru
-pass : 123456
+Можно либо зарегистрироваться либо сразу зайти под уже зарегистрированными юзерами
+<br>
+- Рекрутер<br>
+email: test_2@mail.ru<br>
+pass : 123456<br>
+- Соискатель<br>
+email: test@mail.ru<br>
+pass : 123456<br>
+<br>
+
 
 prisma
 ```
