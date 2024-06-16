@@ -64,7 +64,7 @@ app.doc("/doc", {
   },
 });
 
-app.get("/ui", swaggerUI({ url: "/doc" }));
+app.get("/docs", swaggerUI({ url: "/doc" }));
 
 app.get('/user/:id', jwtAuth(), async (c) => {
   const id = c.req.param('id')
