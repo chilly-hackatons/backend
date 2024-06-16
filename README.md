@@ -10,6 +10,20 @@ EMAIL_PASSWORD = lbnwztiauskscwhc
 EMAIL = hackaton404@gmail.com
 ```
 
+Можно либо зарегестрироваться либо сразу зайти под уже зарегистрованными юзерами
+- Рекрутер
+email: test_2@mail.ru
+pass : 123456
+- Соискатель
+email: test@mail.ru
+pass : 123456
+
+prisma
+```
+npx prisma studio
+
+```
+
 
 ```
 yarn install
